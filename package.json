@@ -8,7 +8,6 @@
     "express-session": "^1.18.1",
     "mongodb": "^6.13.1",
     "mongoose": "^8.12.1",
-    "mongosh": "^2.4.0",
     "path": "^0.12.7",
     "session": "^0.1.0"
   },

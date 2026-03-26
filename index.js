@@ -21,7 +21,27 @@ app.use(
 );
 
 app.get("/", function (req, res) {
-  res.render("index.ejs", {});
+  res.render("home.ejs", {});
+});
+
+app.get("/login", function (req, res) {
+  res.render("login.ejs", {});
+});
+
+app.get("/urna", function (req, res) {
+  res.render("urna.ejs", {});
+});
+
+app.get("/candidato", function (req, res) {
+  res.render("candidato.ejs", {});
+});
+
+app.get("/admin", function (req, res) {
+  res.render("admin.ejs", {});
+});
+
+app.get("/resultados", function (req, res) {
+  res.render("resultados.ejs", {});
 });
 
 app.listen("3000", function () {

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área do Candidato</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="candidato" class="view active">
+        <h2>Lançar Candidatura</h2>
+
+        <div class="form-group">
+            <label>Nome Completo</label>
+            <input type="text" placeholder="Seu nome">
+        </div>
+
+        <div class="form-group">
+            <label>Número de Campanha (2 dígitos)</label>
+            <input type="number" placeholder="Ex: 42">
+        </div>
+
+        <button class="btn btn-primary" onclick="enviarCandidatura()">
+            Enviar para Homologação
+        </button>
+        
+        <h3 style="margin-top: 30px;">Status da Candidatura</h3>
+        <p>
+            Sua solicitação está:
+            <span id="status" class="status-pendente">Em Análise (Pendente)</span>
+        </p>
+
+        <br>
+        <a href="index.html">← Voltar</a>
+    </div>
+
+    <script>
+        function enviarCandidatura() {
+            alert('Candidatura enviada para análise do Admin!');
+            
+            // Simulação de status
+            document.getElementById('status').innerText = "Em Análise (Pendente)";
+        }
+    </script>
+
+</body>
+</html>

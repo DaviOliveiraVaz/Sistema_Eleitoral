@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Eleitoral - Acesso</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Sistema Eleitoral</h1>
+        <p>Escolha o perfil para continuar</p>
+    </header>
+    
+    <hr>
+
+    <div class="container">
+        <div id="login-options">
+            
+            <div class="card" onclick="window.location.href='/urna'" style="cursor:pointer; border:1px solid #ccc; padding:15px; margin-bottom:10px;">
+                <h3>🗳️ Eleitor</h3>
+                <p>Acessar a urna para votar.</p>
+            </div>
+
+            <div class="card" onclick="window.location.href='/candidato'" style="cursor:pointer; border:1px solid #ccc; padding:15px; margin-bottom:10px;">
+                <h3>👤 Candidato</h3>
+                <p>Visualizar dados da candidatura.</p>
+            </div>
+
+            <div class="card" onclick="window.location.href='/admin'" style="cursor:pointer; border:1px solid #ccc; padding:15px; margin-bottom:10px;">
+                <h3>⚙️ Administrador</h3>
+                <p>Gerenciar candidatos e apuração.</p>
+            </div>
+            
+        </div>
+    </div>
+    <hr>
+    <footer>
+        <button onclick="window.location.href='/'">Voltar</button>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados da Eleição</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="resultados" class="view active">
+        <h2>Resultados Parciais</h2>
+
+        <div style="display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
+            
+            <div style="flex: 1; min-width: 250px; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+                <h3>Ranking</h3>
+
+                <ul id="ranking" style="list-style: none; margin-top: 15px; line-height: 2;">
+                    <li><strong>1º</strong> - João Silva (12) - 45%</li>
+                    <li><strong>2º</strong> - Maria Souza (42) - 30%</li>
+                    <li><strong>3º</strong> - Brancos/Nulos - 25%</li>
+                </ul>
+            </div>
+
+            <div style="flex: 1; min-width: 250px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: #fafafa;">
+                <canvas id="grafico" width="300" height="300"></canvas>
+            </div>
+
+        </div>
+
+        <br>
+        <a href="index.html">← Voltar</a>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Dados mock
+        const dados = {
+            labels: ['João Silva', 'Maria Souza', 'Brancos/Nulos'],
+            votos: [45, 30, 25]
+        };
+
+        const ctx = document.getElementById('grafico').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: dados.labels,
+                datasets: [{
+                    data: dados.votos
+                }]
+            }
+        });
+    </script>
+
+</body>
+</html>
