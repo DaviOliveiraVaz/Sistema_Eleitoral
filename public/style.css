@@ -1,0 +1,47 @@
+        /* Estilos Gerais e Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f4f9; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        header { background-color: #2c3e50; color: white; padding: 1rem; text-align: center; }
+        nav { background-color: #34495e; padding: 0.5rem; text-align: center; display: none; }
+        nav button { background: none; border: none; color: white; margin: 0 10px; cursor: pointer; font-size: 1rem; }
+        nav button:hover { text-decoration: underline; }
+        .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .view { display: none; width: 100%; max-width: 800px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .view.active { display: block; }
+        h2 { margin-bottom: 20px; color: #2c3e50; text-align: center; }
+        
+        /* Botões Genéricos */
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; margin: 5px; color: white; transition: 0.2s; }
+        .btn-primary { background-color: #3498db; }
+        .btn-primary:hover { background-color: #2980b9; }
+
+        /* Área de Login */
+        .login-options { display: flex; justify-content: space-around; margin-top: 30px; }
+        .login-card { text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 8px; width: 30%; cursor: pointer; transition: 0.3s; }
+        .login-card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-color: #3498db; }
+
+        /* Estilos da Urna Eletrônica */
+        .urna-container { display: flex; background-color: #dbdcd8; padding: 20px; border-radius: 5px; border: 2px solid #ccc; max-width: 750px; margin: 0 auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+        .urna-tela { flex: 1; background-color: #e8f4e8; border: 2px solid #999; margin-right: 20px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; font-family: 'Courier New', Courier, monospace; min-height: 350px; }
+        .urna-teclado { background-color: #2b2b2b; padding: 20px; border-radius: 5px; width: 280px; display: flex; flex-direction: column; align-items: center; }
+        .teclado-numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; width: 100%; }
+        .tecla { background-color: #111; color: white; border: none; padding: 15px; font-size: 1.2rem; font-weight: bold; border-radius: 3px; cursor: pointer; box-shadow: 2px 2px 0px #000; }
+        .tecla:active { transform: translate(2px, 2px); box-shadow: none; }
+        .teclado-acoes { display: flex; gap: 10px; width: 100%; }
+        .tecla-acao { flex: 1; border: none; padding: 15px 5px; font-size: 0.9rem; font-weight: bold; border-radius: 3px; cursor: pointer; text-transform: uppercase; box-shadow: 2px 2px 0px rgba(0,0,0,0.5); }
+        .tecla-branco { background-color: #fff; color: #000; }
+        .tecla-corrige { background-color: #f39c12; color: #000; }
+        .tecla-confirma { background-color: #2ecc71; color: #000; height: 60px; margin-top: -10px; }
+        .tela-header { font-size: 1.2rem; font-weight: bold; text-transform: uppercase; }
+        .tela-numeros { display: flex; gap: 5px; margin: 20px 0; }
+        .digito { width: 40px; height: 50px; border: 1px solid #333; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; }
+        .tela-rodape { font-size: 0.8rem; border-top: 1px solid #333; padding-top: 10px; }
+
+        /* Formulários e Tabelas */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; }
+        .status-pendente { color: #f39c12; font-weight: bold; }
