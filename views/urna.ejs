@@ -6,11 +6,12 @@
     <title>Urna Eletrônica</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="urna-page">
 
     <div id="urna" class="view active">
         <h2>Votação</h2>
 
+        <div class="container">
         <div class="urna-container">
             <div class="urna-tela">
                 <div>
@@ -56,9 +57,10 @@
                 </div>
             </div>
         </div>
+        </div>
 
         <br>
-        <a href="/">← Voltar</a>
+        <a href="/login">← Voltar</a>
     </div>
 
     <script>
@@ -105,7 +107,7 @@
             ) {
                 alert("FIM! Voto computado com sucesso.");
                 corrigirVoto();
-                window.location.href = "/"; // volta pro sistema
+                window.location.href = "/resultados";
             } else {
                 alert("Digite o número completo do candidato.");
             }

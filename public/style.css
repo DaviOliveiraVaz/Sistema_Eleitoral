@@ -1,47 +1,541 @@
-        /* Estilos Gerais e Reset */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f4f9; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background-color: #2c3e50; color: white; padding: 1rem; text-align: center; }
-        nav { background-color: #34495e; padding: 0.5rem; text-align: center; display: none; }
-        nav button { background: none; border: none; color: white; margin: 0 10px; cursor: pointer; font-size: 1rem; }
-        nav button:hover { text-decoration: underline; }
-        .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .view { display: none; width: 100%; max-width: 800px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .view.active { display: block; }
-        h2 { margin-bottom: 20px; color: #2c3e50; text-align: center; }
-        
-        /* Botões Genéricos */
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; margin: 5px; color: white; transition: 0.2s; }
-        .btn-primary { background-color: #3498db; }
-        .btn-primary:hover { background-color: #2980b9; }
+/* ========================= */
+/* RESET E BASE */
+/* ========================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-        /* Área de Login */
-        .login-options { display: flex; justify-content: space-around; margin-top: 30px; }
-        .login-card { text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 8px; width: 30%; cursor: pointer; transition: 0.3s; }
-        .login-card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-color: #3498db; }
+body {
+    background-color: #f4f4f9;
+    color: #333;
+    min-height: 100vh;
+}
 
-        /* Estilos da Urna Eletrônica */
-        .urna-container { display: flex; background-color: #dbdcd8; padding: 20px; border-radius: 5px; border: 2px solid #ccc; max-width: 750px; margin: 0 auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
-        .urna-tela { flex: 1; background-color: #e8f4e8; border: 2px solid #999; margin-right: 20px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; font-family: 'Courier New', Courier, monospace; min-height: 350px; }
-        .urna-teclado { background-color: #2b2b2b; padding: 20px; border-radius: 5px; width: 280px; display: flex; flex-direction: column; align-items: center; }
-        .teclado-numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; width: 100%; }
-        .tecla { background-color: #111; color: white; border: none; padding: 15px; font-size: 1.2rem; font-weight: bold; border-radius: 3px; cursor: pointer; box-shadow: 2px 2px 0px #000; }
-        .tecla:active { transform: translate(2px, 2px); box-shadow: none; }
-        .teclado-acoes { display: flex; gap: 10px; width: 100%; }
-        .tecla-acao { flex: 1; border: none; padding: 15px 5px; font-size: 0.9rem; font-weight: bold; border-radius: 3px; cursor: pointer; text-transform: uppercase; box-shadow: 2px 2px 0px rgba(0,0,0,0.5); }
-        .tecla-branco { background-color: #fff; color: #000; }
-        .tecla-corrige { background-color: #f39c12; color: #000; }
-        .tecla-confirma { background-color: #2ecc71; color: #000; height: 60px; margin-top: -10px; }
-        .tela-header { font-size: 1.2rem; font-weight: bold; text-transform: uppercase; }
-        .tela-numeros { display: flex; gap: 5px; margin: 20px 0; }
-        .digito { width: 40px; height: 50px; border: 1px solid #333; display: flex; justify-content: center; align-items: center; font-size: 2rem; font-weight: bold; }
-        .tela-rodape { font-size: 0.8rem; border-top: 1px solid #333; padding-top: 10px; }
+/* ========================= */
+/* CONTAINER PADRÃO */
+/* ========================= */
+.container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
 
-        /* Formulários e Tabelas */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f8f9fa; }
-        .status-pendente { color: #f39c12; font-weight: bold; }
+/* ========================= */
+/* VIEWS */
+/* ========================= */
+.view {
+    display: none;
+    width: 100%;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.view.active {
+    display: block;
+}
+
+/* ========================= */
+/* TÍTULOS */
+/* ========================= */
+h2 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    text-align: center;
+}
+
+/* ========================= */
+/* BOTÕES */
+/* ========================= */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 5px;
+    color: white;
+    transition: 0.2s;
+}
+
+.btn-primary {
+    background-color: #3498db;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+/* ========================= */
+/* 🗳️ URNA ELETRÔNICA */
+/* ========================= */
+
+/* CENTRALIZA SÓ A URNA */
+body.urna-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.urna-container {
+    display: flex;
+    gap: 20px;
+
+    background-color: #dbdcd8;
+    padding: 25px;
+    border-radius: 8px;
+    border: 2px solid #ccc;
+
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* TELA */
+.urna-tela {
+    flex: 1;
+
+    background-color: #e8f4e8;
+    border: 2px solid #999;
+
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 350px;
+}
+
+/* HEADER */
+.tela-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* NÚMEROS */
+.tela-numeros {
+    display: flex;
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.digito {
+    width: 50px;
+    height: 60px;
+
+    border: 2px solid #333;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 2rem;
+    font-weight: bold;
+
+    background-color: white;
+}
+
+/* RODAPÉ */
+.tela-rodape {
+    font-size: 0.85rem;
+    border-top: 1px solid #333;
+    padding-top: 10px;
+}
+
+/* TECLADO */
+.urna-teclado {
+    background-color: #2b2b2b;
+    padding: 20px;
+    border-radius: 8px;
+
+    width: 300px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* NUMÉRICO */
+.teclado-numeros {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+/* TECLAS */
+.tecla {
+    background-color: #111;
+    color: white;
+
+    border: none;
+    padding: 18px;
+
+    font-size: 1.3rem;
+    font-weight: bold;
+
+    border-radius: 5px;
+    cursor: pointer;
+
+    box-shadow: 2px 2px 0px #000;
+    transition: 0.1s;
+}
+
+.tecla:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+/* AÇÕES */
+.teclado-acoes {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.tecla-acao {
+    flex: 1;
+
+    border: none;
+    padding: 15px 5px;
+
+    font-size: 0.9rem;
+    font-weight: bold;
+
+    border-radius: 5px;
+    cursor: pointer;
+
+    text-transform: uppercase;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+}
+
+.tecla-branco {
+    background-color: #fff;
+    color: #000;
+}
+
+.tecla-corrige {
+    background-color: #f39c12;
+    color: #000;
+}
+
+.tecla-confirma {
+    background-color: #2ecc71;
+    color: #000;
+    height: 60px;
+}
+
+/* ========================= */
+/* 📋 ADMIN / TABELAS */
+/* ========================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th {
+    background-color: #2c3e50;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #f2f2f2;
+}
+
+/* STATUS */
+.status-pendente {
+    color: #f39c12;
+    font-weight: bold;
+}
+
+.status-aprovado {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+.status-rejeitado {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* ========================= */
+/* FORMULÁRIOS */
+/* ========================= */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* ========================= */
+/* 📱 RESPONSIVO */
+/* ========================= */
+@media (max-width: 900px) {
+    .urna-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .urna-teclado {
+        width: 100%;
+        max-width: 350px;
+    }
+}
+
+/* ========================= */
+/* 🔐 TELA DE LOGIN / ACESSO */
+/* ========================= */
+
+/* Centraliza tudo na tela e dá um fundo escuro elegante */
+body.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #2c3e50; 
+    margin: 0;
+    padding: 20px;
+}
+
+/* Container principal estilo "Janela" */
+.login-wrapper {
+    background: white;
+    width: 100%;
+    max-width: 900px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    overflow: hidden; /* Faz o header respeitar o arredondamento */
+}
+
+/* Cabeçalho do Login */
+.login-header {
+    background-color: #34495e;
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    border-bottom: 4px solid #3498db;
+}
+
+.login-header h1 {
+    margin-bottom: 10px;
+    font-size: 2.5rem;
+}
+
+.login-header p {
+    font-size: 1.1rem;
+    color: #bdc3c7;
+}
+
+/* Área dos Cards */
+.login-options {
+    display: flex;
+    gap: 25px;
+    padding: 40px 30px;
+    justify-content: center;
+    flex-wrap: wrap; /* Se a tela for pequena, joga os cards para baixo */
+}
+
+/* Cards Individuais */
+.login-card {
+    flex: 1;
+    min-width: 220px;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease; /* Animação suave */
+}
+
+/* Efeito ao passar o mouse */
+.login-card:hover {
+    transform: translateY(-10px); /* Sobe um pouquinho */
+    box-shadow: 0 12px 20px rgba(0,0,0,0.15); /* Sombra mais forte */
+    border-color: #3498db; /* Borda azul */
+    background: white;
+}
+
+.card-icon {
+    font-size: 3.5rem;
+    margin-bottom: 15px;
+}
+
+.login-card h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+
+.login-card p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Rodapé do Login */
+.login-footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #f4f4f9;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Botão Voltar personalizado baseado no seu .btn */
+.btn-voltar {
+    background-color: #95a5a6;
+    color: white;
+    font-weight: bold;
+    padding: 10px 25px;
+}
+
+.btn-voltar:hover {
+    background-color: #7f8c8d;
+}
+
+/* ========================= */
+/* 🏠 TELA INICIAL (HOME) */
+/* ========================= */
+
+/* Fundo com degradê para a página inicial dar impacto */
+body.home-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* Container principal centralizado */
+.home-wrapper {
+    background: white;
+    width: 100%;
+    max-width: 900px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Cabeçalho de boas-vindas */
+.hero-section {
+    background-color: #ecf0f1;
+    padding: 50px 20px;
+    border-bottom: 1px solid #bdc3c7;
+}
+
+.hero-section h1 {
+    color: #2c3e50;
+    font-size: 2.8rem;
+    margin-bottom: 10px;
+}
+
+.hero-section p {
+    color: #7f8c8d;
+    font-size: 1.2rem;
+}
+
+/* Área de conteúdo e instruções */
+.home-content {
+    padding: 40px 30px;
+}
+
+.instructions-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap; /* Quebra a linha em telas menores */
+}
+
+/* Mini-cards de instrução */
+.instruction-item {
+    flex: 1;
+    min-width: 220px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: transform 0.2s;
+}
+
+.instruction-item:hover {
+    transform: scale(1.02);
+    border-color: #bdc3c7;
+}
+
+.instruction-item .icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.instruction-item h4 {
+    color: #34495e;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.instruction-item p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Botão de Ação Principal (Call to Action) */
+.cta-container {
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+.btn-cta {
+    background-color: #2ecc71; /* Verde chamativo */
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    padding: 15px 50px;
+    border-radius: 50px; /* Bordas bem arredondadas */
+    text-transform: uppercase;
+    box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);
+}
+
+.btn-cta:hover {
+    background-color: #27ae60;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(46, 204, 113, 0.4);
+}

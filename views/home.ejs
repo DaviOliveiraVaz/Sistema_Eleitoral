@@ -2,32 +2,46 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Eleitoral - Início</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <header>
-        <h1>Sistema Eleitoral</h1>
-        <p>Bem-vindo ao portal de votação e gerenciamento.</p>
-    </header>
+<body class="home-page">
 
-    <hr>
+    <div class="home-wrapper">
+        <header class="hero-section">
+            <h1>Sistema Eleitoral</h1>
+            <p>Bem-vindo ao portal oficial de votação e gerenciamento.</p>
+        </header>
 
-    <main>
-        <h3>Orientações</h3>
-        <ul>
-            <li>Para votar, selecione a opção "Acessar Sistema" e escolha o perfil Eleitor.</li>
-            <li>Candidatos podem visualizar seus dados de registro.</li>
-            <li>Administradores possuem acesso ao painel de controle e apuração.</li>
-        </ul>
+        <main class="home-content">
+            
+            <div class="instructions-container">
+                <div class="instruction-item">
+                    <span class="icon">🗳️</span>
+                    <h4>Para Eleitores</h4>
+                    <p>Acesse o sistema com o perfil de Eleitor para registrar seu voto com segurança.</p>
+                </div>
+                <div class="instruction-item">
+                    <span class="icon">👤</span>
+                    <h4>Para Candidatos</h4>
+                    <p>Acompanhe o status, os dados e a homologação do seu registro de candidatura.</p>
+                </div>
+                <div class="instruction-item">
+                    <span class="icon">⚙️</span>
+                    <h4>Administradores</h4>
+                    <p>Gerencie o pleito, libere candidaturas e acompanhe a apuração em tempo real.</p>
+                </div>
+            </div>
 
-        <br>
-        
-        <button onclick="window.location.href='/login'" style="padding: 10px 20px; font-size: 1.1rem; cursor: pointer;">
-            ACESSAR SISTEMA
-        </button>
-    </main>
+            <div class="cta-container">
+                <button class="btn btn-cta" onclick="window.location.href='/login'">
+                    Acessar Sistema
+                </button>
+            </div>
 
-    <hr>
+        </main>
+    </div>
+
 </body>
 </html>
