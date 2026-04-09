@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Eleitoral - Cadastro Candidato</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page"> <div class="login-wrapper">
+        <header class="login-header">
+            <h1>Cadastro de Candidato</h1>
+            <p>Insira seus dados para lançar a sua candidatura</p>
+        </header>
+        
+        <div style="padding: 30px;">
+            <form action="/cadastro_candidato" method="POST">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" name="nome" placeholder="Seu nome" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px; padding: 15px;">
+                    Finalizar Cadastro
+                </button>
+            </form>
+        </div>
+
+        <footer class="login-footer">
+            <button class="btn btn-voltar" onclick="window.location.href='/login'">⬅ Voltar</button>
+        </footer>
+    </div>
+
+</body>
+</html>

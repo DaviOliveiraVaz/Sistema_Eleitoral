@@ -7,6 +7,7 @@ const session = require("express-session");
 const conexao = require("./config/database");
 require('dotenv').config();
 const Eleitor = require("./model/Eleitor");
+const Candidato = require("./model/Candidato");
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -83,6 +84,19 @@ app.post("/cadastro_eleitor", async (req, res) => {
     } catch (error) {
         console.error("Erro no cadastro:", error);
         res.status(500).send("Erro ao cadastrar eleitor.");
+    }
+});
+
+app.get("/cadastro_candidato", function (req, res) {
+  res.render("cadastro_candidato.ejs", {});
+});
+
+app.post("/cadastro_candidato", async (req, res) => {
+    try {
+  
+    } catch (error) {
+        console.error("Erro no cadastro:", error);
+        res.status(500).send("Erro ao cadastrar candidato.");
     }
 });
 
