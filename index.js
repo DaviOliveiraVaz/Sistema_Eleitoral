@@ -1,14 +1,19 @@
 const express = require("express");
 const app = express();
 const path = require("path");
-const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const conexao = require("./config/database");
+const mongoose = require("mongoose");
 require('dotenv').config();
+
 const Eleitor = require("./model/Eleitor");
 const Candidato = require("./model/Candidato");
 
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log("MongoDB conectado com sucesso!"))
+  .catch(err => console.error("Erro ao conectar no MongoDB:", err));
+
+app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -16,90 +21,93 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || "fallback_secret",
     resave: false,
     saveUninitialized: true,
   })
 );
 
-app.get("/", function (req, res) {
-  res.render("home.ejs", {});
+app.get("/", (req, res) => res.render("home.ejs"));
+app.get("/login", (req, res) => res.render("login.ejs"));
+
+app.get("/urna", async (req, res) => {
+    try {
+        const candidatos = await Candidato.find({ status: "Homologado" });
+        res.render("urna.ejs", { candidatos });
+    } catch (error) {
+        res.status(500).send("Erro ao carregar urna.");
+    }
 });
 
-app.get("/login", function (req, res) {
-  res.render("login.ejs", {});
+app.get("/candidato", (req, res) => {
+    res.render("cadastro_candidato.ejs");
 });
 
-app.get("/urna", function (req, res) {
-  res.render("urna.ejs", {});
+app.get("/cadastro_candidato", (req, res) => {
+    res.render("cadastro_candidato.ejs");
 });
 
-app.get("/candidato", function (req, res) {
-  res.render("candidato.ejs", {});
+app.get("/admin", async (req, res) => {
+    try {
+        const candidatos = await Candidato.find();
+        res.render("admin.ejs", { candidatos });
+    } catch (error) {
+        res.status(500).send("Erro ao carregar painel administrativo.");
+    }
 });
 
-app.get("/admin", function (req, res) {
-  res.render("admin.ejs", {});
+app.get("/resultados", async (req, res) => {
+    try {
+        const candidatos = await Candidato.find({ status: "Homologado" }).sort({ votos: -1 });
+        res.render("resultados.ejs", { candidatos });
+    } catch (error) {
+        res.status(500).send("Erro ao carregar resultados.");
+    }
 });
 
-app.get("/resultados", function (req, res) {
-  res.render("resultados.ejs", {});
-});
-
-app.get("/cadastro_eleitor", function (req, res) {
-  res.render("cadastro_eleitor.ejs", {});
-});
+app.get("/cadastro_eleitor", (req, res) => res.render("cadastro_eleitor.ejs"));
 
 app.post("/cadastro_eleitor", async (req, res) => {
     try {
         const { nome, cpf, municipio, idade, naturalidade } = req.body;
-
-        const eleitorExistente = await Eleitor.findOne({ cpf: cpf });
-        
+        const eleitorExistente = await Eleitor.findOne({ cpf });
         if (eleitorExistente) {
-            return res.send(`
-                <script>
-                    alert('CPF já cadastrado! Verifique os dados.');
-                    window.location.href = "/cadastro_eleitor";
-                </script>
-            `);
+            return res.send("<script>alert('CPF já cadastrado!'); window.history.back();</script>");
         }
-
         const novoEleitor = new Eleitor({
-            nome,
-            cpf,
-            municipio,
-            idade: Number(idade),
-            naturalidade
+            nome, cpf, municipio, idade: Number(idade), naturalidade
         });
-
         await novoEleitor.save();
-
-        res.send(`
-            <script>
-                alert('Eleitor cadastrado com sucesso! Agora você pode votar.');
-                window.location.href = "/urna";
-            </script>
-        `);
+        res.send("<script>alert('Eleitor cadastrado com sucesso!'); window.location.href = '/login';</script>");
     } catch (error) {
-        console.error("Erro no cadastro:", error);
         res.status(500).send("Erro ao cadastrar eleitor.");
     }
 });
 
-app.get("/cadastro_candidato", function (req, res) {
-  res.render("cadastro_candidato.ejs", {});
-});
-
 app.post("/cadastro_candidato", async (req, res) => {
     try {
-  
+        const { nome, cpf, numero, cargo, partido, municipio, idade, naturalidade } = req.body;
+        const existente = await Candidato.findOne({ $or: [{ cpf }, { numero }] });
+        if (existente) {
+            return res.send("<script>alert('CPF ou Número já cadastrado!'); window.history.back();</script>");
+        }
+        const novoCandidato = new Candidato({
+            nome, 
+            cpf, 
+            numero: Number(numero), 
+            cargo, 
+            partido, 
+            municipio, 
+            idade: Number(idade), 
+            naturalidade, 
+            status: "Pendente"
+        });
+        await novoCandidato.save();
+        res.send("<script>alert('Candidatura enviada! Aguarde homologação.'); window.location.href = '/login';</script>");
     } catch (error) {
-        console.error("Erro no cadastro:", error);
+        console.error(error);
         res.status(500).send("Erro ao cadastrar candidato.");
     }
 });
 
-app.listen("3000", function () {
-  console.log("Servidor rodando na porta 3000!");
-});
+app.listen("3000", () => console.log("Servidor rodando na porta 3000!"));
