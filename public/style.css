@@ -1,6 +1,3 @@
-/* ========================= */
-/* RESET E BASE */
-/* ========================= */
 * {
     margin: 0;
     padding: 0;
@@ -14,9 +11,6 @@ body {
     min-height: 100vh;
 }
 
-/* ========================= */
-/* CONTAINER PADRÃO */
-/* ========================= */
 .container {
     width: 100%;
     max-width: 1100px;
@@ -24,9 +18,6 @@ body {
     padding: 20px;
 }
 
-/* ========================= */
-/* VIEWS */
-/* ========================= */
 .view {
     display: none;
     width: 100%;
@@ -40,18 +31,12 @@ body {
     display: block;
 }
 
-/* ========================= */
-/* TÍTULOS */
-/* ========================= */
 h2 {
     margin-bottom: 20px;
     color: #2c3e50;
     text-align: center;
 }
 
-/* ========================= */
-/* BOTÕES */
-/* ========================= */
 .btn {
     padding: 10px 20px;
     border: none;
@@ -71,11 +56,6 @@ h2 {
     background-color: #2980b9;
 }
 
-/* ========================= */
-/* 🗳️ URNA ELETRÔNICA */
-/* ========================= */
-
-/* CENTRALIZA SÓ A URNA */
 body.urna-page {
     display: flex;
     justify-content: center;
@@ -98,7 +78,6 @@ body.urna-page {
     box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* TELA */
 .urna-tela {
     flex: 1;
 
@@ -115,14 +94,12 @@ body.urna-page {
     min-height: 350px;
 }
 
-/* HEADER */
 .tela-header {
     font-size: 1.2rem;
     font-weight: bold;
     text-transform: uppercase;
 }
 
-/* NÚMEROS */
 .tela-numeros {
     display: flex;
     gap: 8px;
@@ -145,14 +122,12 @@ body.urna-page {
     background-color: white;
 }
 
-/* RODAPÉ */
 .tela-rodape {
     font-size: 0.85rem;
     border-top: 1px solid #333;
     padding-top: 10px;
 }
 
-/* TECLADO */
 .urna-teclado {
     background-color: #2b2b2b;
     padding: 20px;
@@ -165,7 +140,6 @@ body.urna-page {
     align-items: center;
 }
 
-/* NUMÉRICO */
 .teclado-numeros {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -175,7 +149,6 @@ body.urna-page {
     width: 100%;
 }
 
-/* TECLAS */
 .tecla {
     background-color: #111;
     color: white;
@@ -198,7 +171,6 @@ body.urna-page {
     box-shadow: none;
 }
 
-/* AÇÕES */
 .teclado-acoes {
     display: flex;
     gap: 10px;
@@ -237,9 +209,6 @@ body.urna-page {
     height: 60px;
 }
 
-/* ========================= */
-/* 📋 ADMIN / TABELAS */
-/* ========================= */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -265,7 +234,6 @@ tr:hover {
     background-color: #f2f2f2;
 }
 
-/* STATUS */
 .status-pendente {
     color: #f39c12;
     font-weight: bold;
@@ -281,9 +249,6 @@ tr:hover {
     font-weight: bold;
 }
 
-/* ========================= */
-/* FORMULÁRIOS */
-/* ========================= */
 .form-group {
     margin-bottom: 15px;
 }
@@ -301,9 +266,6 @@ tr:hover {
     border-radius: 4px;
 }
 
-/* ========================= */
-/* 📱 RESPONSIVO */
-/* ========================= */
 @media (max-width: 900px) {
     .urna-container {
         flex-direction: column;
@@ -316,11 +278,6 @@ tr:hover {
     }
 }
 
-/* ========================= */
-/* 🔐 TELA DE LOGIN / ACESSO */
-/* ========================= */
-
-/* Centraliza tudo na tela e dá um fundo escuro elegante */
 body.login-page {
     display: flex;
     justify-content: center;
@@ -330,17 +287,15 @@ body.login-page {
     padding: 20px;
 }
 
-/* Container principal estilo "Janela" */
 .login-wrapper {
     background: white;
     width: 100%;
     max-width: 900px;
     border-radius: 12px;
     box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-    overflow: hidden; /* Faz o header respeitar o arredondamento */
+    overflow: hidden;
 }
 
-/* Cabeçalho do Login */
 .login-header {
     background-color: #34495e;
     color: white;
@@ -359,16 +314,14 @@ body.login-page {
     color: #bdc3c7;
 }
 
-/* Área dos Cards */
 .login-options {
     display: flex;
     gap: 25px;
     padding: 40px 30px;
     justify-content: center;
-    flex-wrap: wrap; /* Se a tela for pequena, joga os cards para baixo */
+    flex-wrap: wrap;
 }
 
-/* Cards Individuais */
 .login-card {
     flex: 1;
     min-width: 220px;
@@ -378,14 +331,13 @@ body.login-page {
     padding: 30px 20px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease; /* Animação suave */
+    transition: all 0.3s ease;
 }
 
-/* Efeito ao passar o mouse */
 .login-card:hover {
-    transform: translateY(-10px); /* Sobe um pouquinho */
-    box-shadow: 0 12px 20px rgba(0,0,0,0.15); /* Sombra mais forte */
-    border-color: #3498db; /* Borda azul */
+    transform: translateY(-10px);
+    box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    border-color: #3498db;
     background: white;
 }
 
@@ -406,7 +358,6 @@ body.login-page {
     line-height: 1.5;
 }
 
-/* Rodapé do Login */
 .login-footer {
     text-align: center;
     padding: 20px;
@@ -414,7 +365,6 @@ body.login-page {
     border-top: 1px solid #e9ecef;
 }
 
-/* Botão Voltar personalizado baseado no seu .btn */
 .btn-voltar {
     background-color: #95a5a6;
     color: white;
@@ -426,11 +376,6 @@ body.login-page {
     background-color: #7f8c8d;
 }
 
-/* ========================= */
-/* 🏠 TELA INICIAL (HOME) */
-/* ========================= */
-
-/* Fundo com degradê para a página inicial dar impacto */
 body.home-page {
     display: flex;
     justify-content: center;
@@ -441,7 +386,6 @@ body.home-page {
     min-height: 100vh;
 }
 
-/* Container principal centralizado */
 .home-wrapper {
     background: white;
     width: 100%;
@@ -452,7 +396,6 @@ body.home-page {
     text-align: center;
 }
 
-/* Cabeçalho de boas-vindas */
 .hero-section {
     background-color: #ecf0f1;
     padding: 50px 20px;
@@ -470,7 +413,6 @@ body.home-page {
     font-size: 1.2rem;
 }
 
-/* Área de conteúdo e instruções */
 .home-content {
     padding: 40px 30px;
 }
@@ -480,10 +422,9 @@ body.home-page {
     gap: 20px;
     justify-content: center;
     margin-bottom: 40px;
-    flex-wrap: wrap; /* Quebra a linha em telas menores */
+    flex-wrap: wrap;
 }
 
-/* Mini-cards de instrução */
 .instruction-item {
     flex: 1;
     min-width: 220px;
@@ -517,19 +458,18 @@ body.home-page {
     line-height: 1.4;
 }
 
-/* Botão de Ação Principal (Call to Action) */
 .cta-container {
     margin-top: 20px;
     padding-bottom: 10px;
 }
 
 .btn-cta {
-    background-color: #2ecc71; /* Verde chamativo */
+    background-color: #2ecc71;
     color: white;
     font-size: 1.3rem;
     font-weight: bold;
     padding: 15px 50px;
-    border-radius: 50px; /* Bordas bem arredondadas */
+    border-radius: 50px;
     text-transform: uppercase;
     box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);
 }
