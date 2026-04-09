@@ -13,27 +13,31 @@
 
         <h3>Homologação de Candidaturas</h3>
 
-        <table>
-            <% Candidatos.forEach(function(candidato) { %>
-            <% if (candidato.status === 'Pendente') { %>
-            <tr>
-                <th>Candidato</th>
-                <th>Número</th>
-                <th>Status</th>
-                <th>Ações</th>
-            </tr>
-
-            <tr>
-                <td><%= candidato.nome %></td>
-                <td><%= candidato.numero %></td>
-                <td><%= candidato.status %></td>
-                <td>
-                    <button style="background-color: #2ecc71; padding: 5px 10px;">Aprovar</button>
-                    <button style="background-color: #e74c3c; padding: 5px 10px;">Rejeitar</button>
-                </td>
-            </tr>
-            <% } %>
-            <% }) %>  
+        <table border="1" style="width: 100%; text-align: left; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>Candidato</th>
+                    <th>Número</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+                <% Candidatos.forEach(function(candidato) { %>
+                    <% if (candidato.status === 'Pendente') { %>
+                    <tr id="linha-<%= candidato._id %>">
+                        <td><%= candidato.nome %></td>
+                        <td><%= candidato.numero %></td>
+                        <td><%= candidato.status %></td>
+                        <td>
+                            <button onclick="mudarStatus('<%= candidato._id %>', 'Homologado')" style="background-color: #2ecc71; color: white; padding: 5px 10px; border: none; cursor: pointer;">Aprovar</button>
+                            <button onclick="mudarStatus('<%= candidato._id %>', 'Rejeitado')" style="background-color: #e74c3c; color: white; padding: 5px 10px; border: none; cursor: pointer;">Rejeitar</button>
+                        </td>
+                    </tr>
+                    <% } %>
+                <% }) %>  
+            </tbody>
         </table>
 
         <br>
@@ -41,7 +45,32 @@
     </div>
 
     <script>
+        async function mudarStatus(candidatoId, novoStatus) {
+            const acao = novoStatus === 'Homologado' ? 'aprovar' : 'rejeitar';
+            if (!confirm(`Tem certeza que deseja ${acao} este candidato?`)) return;
 
+            try {
+                const response = await fetch('/admin/homologar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ candidatoId, novoStatus })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    document.getElementById(`linha-${candidatoId}`).remove();
+                } else {
+                    alert("Erro: " + data.message);
+                }
+            } catch (error) {
+                console.error("Erro na requisição:", error);
+                alert("Ocorreu um erro ao processar a solicitação.");
+            }
+        }
     </script>
 
 </body>

@@ -6,54 +6,79 @@
     <title>Resultados da Eleição</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body style="background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
 
-    <div id="resultados" class="view active">
-        <h2>Resultados Parciais</h2>
+    <div id="resultados" class="view active" style="padding: 40px; max-width: 1000px; margin: 0 auto; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px; margin-top: 20px;">
+        <h2 style="text-align: center; color: #333;">Resultados Parciais</h2>
 
-        <div style="display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
+        <% for (let cargo in resultadosPorCargo) { %>
+            <% const candidatosDoCargo = resultadosPorCargo[cargo]; %>
             
-            <div style="flex: 1; min-width: 250px; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
-                <h3>Ranking</h3>
+            <% if (candidatosDoCargo.length > 0) { %>
+                
+                <h3 style="margin-top: 40px; border-bottom: 2px solid #eee; padding-bottom: 10px; color: #0056b3;">
+                    <%= cargo %>
+                </h3>
 
-                <ul id="ranking" style="list-style: none; margin-top: 15px; line-height: 2;">
-                    <li><strong>1º</strong> - João Silva (12) - 45%</li>
-                    <li><strong>2º</strong> - Maria Souza (42) - 30%</li>
-                    <li><strong>3º</strong> - Brancos/Nulos - 25%</li>
-                </ul>
-            </div>
+                <div style="display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
+                    
+                    <div style="flex: 1; min-width: 250px; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+                        <h3>Ranking</h3>
+                        <ul id="ranking" style="list-style: none; margin-top: 15px; line-height: 2; padding: 0;">
+                            <% candidatosDoCargo.forEach((candidato, index) => { %>
+                                <li>
+                                    <strong><%= index + 1 %>º</strong> - 
+                                    <%= candidato.nome %> (<%= candidato.numero %>) - 
+                                    <strong><%= candidato.votos %> votos</strong>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    </div>
 
-            <div style="flex: 1; min-width: 250px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: #fafafa;">
-                <canvas id="grafico" width="300" height="300"></canvas>
-            </div>
+                    <div style="flex: 1; min-width: 250px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-color: #fafafa;">
+                        <canvas id="grafico-<%= cargo.replace(/\s/g, '') %>" width="300" height="300"></canvas>
+                    </div>
 
-        </div>
+                </div>
+            <% } %>
+        <% } %>
 
-        <br>
-        <a href="/login">← Voltar</a>
+        <br><br>
+        <a href="/login" style="display: inline-block; padding: 10px 20px; background-color: #0056b3; color: white; text-decoration: none; border-radius: 4px;">← Voltar ao Login</a>
     </div>
 
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // Dados mock
-        const dados = {
-            labels: ['João Silva', 'Maria Souza', 'Brancos/Nulos'],
-            votos: [45, 30, 25]
-        };
+        const dadosCompletos = <%- JSON.stringify(resultadosPorCargo) %>;
 
-        const ctx = document.getElementById('grafico').getContext('2d');
+        const cores = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
 
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: dados.labels,
-                datasets: [{
-                    data: dados.votos
-                }]
+        for (let cargo in dadosCompletos) {
+            const candidatos = dadosCompletos[cargo];
+
+            if (candidatos.length > 0) {
+                const labels = candidatos.map(c => c.nome);
+                const votos = candidatos.map(c => c.votos);
+
+                const canvasId = 'grafico-' + cargo.replace(/\s/g, '');
+                const ctx = document.getElementById(canvasId).getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: votos,
+                            backgroundColor: cores.slice(0, candidatos.length)
+                        }]
+                    },
+                    options: {
+                        responsive: false
+                    }
+                });
             }
-        });
+        }
     </script>
 
 </body>

@@ -3,42 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Eleitoral - Acesso</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Acesso ao Sistema</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f7f6;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-container h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input, 
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus {
+            border-color: #0056b3;
+            outline: none;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #004494;
+        }
+    </style>
 </head>
-<body class="login-page">
-    
-    <div class="login-wrapper">
-        <header class="login-header">
-            <h1>Sistema Eleitoral</h1>
-            <p>Escolha o seu perfil de acesso para continuar</p>
-        </header>
-        
-        <div class="login-options">
+<body>
+
+    <div class="login-container">
+        <h2>Entrar</h2>
+        <form action="/login" method="POST">
             
-            <div class="login-card" onclick="window.location.href='/cadastro_eleitor'">
-                <div class="card-icon">🗳️</div>
-                <h3>Eleitor</h3>
-                <p>Acessar a urna para votar no seu candidato.</p>
+            <div class="form-group">
+                <label for="tipoLogin">Tipo de Acesso</label>
+                <select name="tipoLogin" id="tipoLogin" required>
+                    <option value="" disabled selected>Selecione seu perfil...</option>
+                    <option value="Eleitor">Eleitor</option>
+                    <option value="Candidato">Candidato</option>
+                    <option value="Administrador">Administrador</option>
+                </select>
             </div>
 
-            <div class="login-card" onclick="window.location.href='/candidato'">
-                <div class="card-icon">👤</div>
-                <h3>Candidato</h3>
-                <p>Visualizar e lançar dados da candidatura.</p>
+            <div class="form-group">
+                <label for="cpf">CPF</label>
+                <input type="text" name="cpf" id="cpf" placeholder="Digite seu CPF" required>
             </div>
 
-            <div class="login-card" onclick="window.location.href='/admin'">
-                <div class="card-icon">⚙️</div>
-                <h3>Administrador</h3>
-                <p>Gerenciar candidatos e apuração dos votos.</p>
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" name="senha" id="senha" placeholder="Digite sua senha">
             </div>
-            
-        </div>
 
-        <footer class="login-footer">
-            <button class="btn btn-voltar" onclick="window.location.href='/'">⬅ Voltar ao Início</button>
-        </footer>
+            <button type="submit" class="btn-submit">Acessar</button>
+        </form>
     </div>
 
 </body>
