@@ -68,11 +68,11 @@ app.post('/login', async (req, res) => {
     
     switch (tipoLogin) {
       case 'Eleitor':
-        return res.redirect("/urna");
+        return res.redirect("/home_eleitor");
       case 'Candidato':
         return res.redirect("/home_candidato");
       case 'Administrador':
-        return res.redirect("/admin");
+        return res.redirect("/home_adm");
       default:
         return res.redirect("/"); 
     }
@@ -292,6 +292,13 @@ app.post("/cadastro_candidato", async (req, res) => {
         res.status(500).send("Erro ao cadastrar candidato.");
     }
 });
+
+//marcelo
+app.get("/home_eleitor", (req, res) => res.render("home_eleitor.ejs"));
+
+app.get("/home_candidato", (req, res) => res.render("home_candidato.ejs"));
+
+app.get("/home_adm", (req, res) => res.render("home_adm.ejs"));
 
 app.listen("3000", function () {
   console.log("Servidor rodando na porta 3000!");
