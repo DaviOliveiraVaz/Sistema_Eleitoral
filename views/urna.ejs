@@ -64,55 +64,124 @@
     </div>
 
     <script>
-        let votoAtual = "";
-        
-        function atualizarTela() {
-            document.getElementById('digito1').innerText = votoAtual[0] || "";
-            document.getElementById('digito2').innerText = votoAtual[1] || "";
-            
-            const info = document.getElementById('info-candidato');
 
-            if (votoAtual.length === 2) {
-                if (votoAtual === "12") info.innerText = "Candidato: João Silva";
-                else if (votoAtual === "42") info.innerText = "Candidato: Maria Souza";
-                else info.innerText = "VOTO NULO";
+    const cargos = [
+        { nome: "Deputado Estadual", chave: "deputadoEstadual", digitos: 5 },
+        { nome: "Deputado Federal", chave: "deputadoFederal", digitos: 4 },
+        { nome: "Senador", chave: "senador", digitos: 3 },
+        { nome: "Governador", chave: "governador", digitos: 2 },
+        { nome: "Presidente", chave: "presidente", digitos: 2 }
+    ];
+
+    let etapaAtual = 0;
+    let votoAtual = "";
+    let votos = {};
+
+    const candidatos = <%- JSON.stringify(Candidatos) %>;
+
+    function atualizarTela() {
+        const etapa = cargos[etapaAtual];
+
+        document.querySelector(".tela-header").innerHTML =
+            `Seu voto para<br><br>${etapa.nome.toUpperCase()}`;
+
+        const container = document.querySelector(".tela-numeros");
+        container.innerHTML = "";
+
+        for (let i = 0; i < etapa.digitos; i++) {
+            const div = document.createElement("div");
+            div.classList.add("digito");
+            div.innerText = votoAtual[i] || "";
+            container.appendChild(div);
+        }
+
+        const info = document.getElementById("info-candidato");
+
+        if (votoAtual.length === etapa.digitos) {
+            const candidato = candidatos.find(c =>
+                c.numero == votoAtual &&
+                c.cargo === etapa.nome &&
+                c.homologado
+            );
+
+            if (candidato) {
+                info.innerText = `${candidato.nome} - ${candidato.partido}`;
             } else {
-                info.innerText = "";
+                info.innerText = "VOTO NULO";
             }
+        } else {
+            info.innerText = "";
         }
+    }
 
-        function inserirNumero(num) {
-            if (votoAtual.length < 2) {
-                votoAtual += num;
-                atualizarTela();
-            }
-        }
+    function inserirNumero(num) {
+        const etapa = cargos[etapaAtual];
 
-        function corrigirVoto() {
-            votoAtual = "";
-            document.getElementById('info-candidato').innerText = "";
+        if (votoAtual.length < etapa.digitos) {
+            votoAtual += num;
             atualizarTela();
         }
+    }
 
-        function votarBranco() {
-            votoAtual = "";
+    function corrigirVoto() {
+        votoAtual = "";
+        atualizarTela();
+    }
+
+    function votarBranco() {
+        votoAtual = "";
+        document.getElementById("info-candidato").innerText = "VOTO EM BRANCO";
+    }
+
+    function confirmarVoto() {
+        const etapa = cargos[etapaAtual];
+
+        if (
+            votoAtual.length !== etapa.digitos &&
+            document.getElementById("info-candidato").innerText !== "VOTO EM BRANCO"
+        ) {
+            alert("Digite o número completo.");
+            return;
+        }
+
+        votos[etapa.chave] = votoAtual || null;
+
+        // próxima etapa
+        etapaAtual++;
+        votoAtual = "";
+
+        if (etapaAtual < cargos.length) {
             atualizarTela();
-            document.getElementById('info-candidato').innerText = "VOTO EM BRANCO";
+        } else {
+            enviarVotos();
         }
+    }
 
-        function confirmarVoto() {
-            if (
-                votoAtual.length === 2 ||
-                document.getElementById('info-candidato').innerText === "VOTO EM BRANCO"
-            ) {
-                alert("FIM! Voto computado com sucesso.");
-                corrigirVoto();
-                window.location.href = "/resultados";
-            } else {
-                alert("Digite o número completo do candidato.");
-            }
+    async function enviarVotos() {
+        try {
+            const response = await fetch("/votar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(votos)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.message);
+
+            alert("Voto computado com sucesso!");
+            window.location.href = "/resultados";
+
+        } catch (err) {
+            alert(err.message);
         }
-    </script>
+    }
+
+    atualizarTela();
+    
+</script>
 
 </body>
 </html>

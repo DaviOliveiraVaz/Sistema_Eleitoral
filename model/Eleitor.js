@@ -6,7 +6,8 @@ const EleitorSchema = new Schema({
   municipio: { type: String, required: true },
   idade: { type: Number, required: true },
   naturalidade: { type: String, required: false },
-  nacionalidade: { type: String, required: true, default: "Brasileira" }
+  nacionalidade: { type: String, required: true, default: "Brasileira" },
+  votou: { type: Boolean, default: false }
 });
 
 module.exports = model("Eleitor", EleitorSchema, "Eleitores");

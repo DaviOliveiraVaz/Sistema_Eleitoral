@@ -14,6 +14,8 @@
         <h3>Homologação de Candidaturas</h3>
 
         <table>
+            <% Candidatos.forEach(function(candidato) { %>
+            <% if (candidato.status === 'Pendente') { %>
             <tr>
                 <th>Candidato</th>
                 <th>Número</th>
@@ -22,14 +24,16 @@
             </tr>
 
             <tr>
-                <td>João Silva</td>
-                <td>12</td>
-                <td id="status-joao" class="status-pendente">Pendente</td>
+                <td><%= candidato.nome %></td>
+                <td><%= candidato.numero %></td>
+                <td><%= candidato.status %></td>
                 <td>
-                    <button onclick="aprovar('joao')" style="background-color: #2ecc71; padding: 5px 10px;">Aprovar</button>
-                    <button onclick="rejeitar('joao')" style="background-color: #e74c3c; padding: 5px 10px;">Rejeitar</button>
+                    <button style="background-color: #2ecc71; padding: 5px 10px;">Aprovar</button>
+                    <button style="background-color: #e74c3c; padding: 5px 10px;">Rejeitar</button>
                 </td>
             </tr>
+            <% } %>
+            <% }) %>  
         </table>
 
         <br>
@@ -37,15 +41,7 @@
     </div>
 
     <script>
-        function aprovar(id) {
-            document.getElementById(`status-${id}`).innerText = "Aprovado";
-            alert("Candidatura aprovada!");
-        }
 
-        function rejeitar(id) {
-            document.getElementById(`status-${id}`).innerText = "Rejeitado";
-            alert("Candidatura rejeitada!");
-        }
     </script>
 
 </body>

@@ -8,6 +8,7 @@ const conexao = require("./config/database");
 require('dotenv').config();
 const Eleitor = require("./model/Eleitor");
 const Candidato = require("./model/Candidato");
+const Voto = require("./model/Voto");
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -31,7 +32,77 @@ app.get("/login", function (req, res) {
 });
 
 app.get("/urna", function (req, res) {
-  res.render("urna.ejs", {});
+      try {
+      Candidato.find({}).then(function (docs) {
+        res.render("urna.ejs", { Candidatos: docs });
+      });
+    } catch (error) {
+      console.error("Erro: ", error);
+      res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
+    }
+});
+
+app.post("/votar", async (req, res) => {
+    try {
+        const eleitor = await Eleitor.findById(eleitorId);
+
+        if (eleitor.votou) {
+            return res.status(400).json({ message: "Você já votou" });
+        }
+
+        const {
+            deputadoEstadual,
+            deputadoFederal,
+            senador,
+            governador,
+            presidente
+        } = req.body;
+
+        // 🔒 valida candidatos (evita fraude)
+        async function validar(numero, cargo) {
+            if (!numero) return null;
+
+            const candidato = await Candidato.findOne({
+                numero,
+                cargo,
+                homologado: true
+            });
+
+            return candidato ? candidato._id : null;
+        }
+
+        const voto = {
+            deputadoEstadual: await validar(deputadoEstadual, "Deputado Estadual"),
+            deputadoFederal: await validar(deputadoFederal, "Deputado Federal"),
+            senador: await validar(senador, "Senador"),
+            governador: await validar(governador, "Governador"),
+            presidente: await validar(presidente, "Presidente")
+        };
+
+        // salva voto
+        await Voto.create({
+            eleitorId,
+            votos: voto
+        });
+
+        // soma votos
+        for (let key in voto) {
+            if (voto[key]) {
+                await Candidato.findByIdAndUpdate(voto[key], {
+                    $inc: { votos: 1 }
+                });
+            }
+        }
+
+        eleitor.votou = true;
+        await eleitor.save();
+
+        res.json({ message: "Voto registrado com sucesso" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erro ao registrar voto" });
+    }
 });
 
 app.get("/candidato", function (req, res) {
@@ -39,7 +110,14 @@ app.get("/candidato", function (req, res) {
 });
 
 app.get("/admin", function (req, res) {
-  res.render("admin.ejs", {});
+    try {
+      Candidato.find({}).then(function (docs) {
+        res.render("admin.ejs", { Candidatos: docs });
+      });
+    } catch (error) {
+      console.error("Erro: ", error);
+      res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
+    }
 });
 
 app.get("/resultados", function (req, res) {
