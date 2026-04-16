@@ -28,6 +28,10 @@ app.get("/", function (req, res) {
   res.render("home.ejs", {});
 });
 
+app.get("/cadastro", function (req, res) {
+  res.render("cadastro.ejs", {});
+});
+
 app.get("/login", function (req, res) {
   res.render("login.ejs", {});
 });
@@ -83,6 +87,20 @@ app.post('/login', async (req, res) => {
       `<script>alert("Ocorreu um erro ao consultar o banco de dados."); window.history.back();</script>`
     );
   }
+});
+
+app.get("/sair", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Erro ao finalizar a sessão:", err);
+      return res
+        .status(500)
+        .send(
+          `<script>alert("Ocorreu um erro ao sair da conta."); window.history.back();</script>`
+        );
+    }
+    res.redirect("/login");
+  });
 });
 
 app.get("/urna", function (req, res) {
@@ -287,18 +305,37 @@ app.post("/cadastro_candidato", async (req, res) => {
             idade: Number(idade), naturalidade, status: "Pendente"
         });
         await novoCandidato.save();
-        res.send("<script>alert('Candidatura enviada! Aguarde homologação.'); window.location.href = '/home_candidato';</script>");
+        res.send("<script>alert('Candidatura enviada! Aguarde homologação.'); window.location.href = '/login';</script>");
     } catch (error) {
         res.status(500).send("Erro ao cadastrar candidato.");
     }
 });
 
-//marcelo
 app.get("/home_eleitor", (req, res) => res.render("home_eleitor.ejs"));
 
 app.get("/home_candidato", (req, res) => res.render("home_candidato.ejs"));
 
 app.get("/home_adm", (req, res) => res.render("home_adm.ejs"));
+
+app.get("/consulta_candidatos", async (req, res) => {
+    try {
+        const candidatos = await Candidato.find({ status: "Homologado" }).sort({ nome: 1 });
+
+        const candidatosPorCargo = {};
+        candidatos.forEach(candidato => {
+            if (!candidatosPorCargo[candidato.cargo]) {
+                candidatosPorCargo[candidato.cargo] = [];
+            }
+            candidatosPorCargo[candidato.cargo].push(candidato);
+        });
+
+        res.render("consulta_candidatos.ejs", { candidatosPorCargo });
+
+    } catch (error) {
+        console.error("Erro ao carregar candidatos:", error);
+        res.status(500).send("Erro ao carregar a lista de candidatos.");
+    }
+});
 
 app.listen("3000", function () {
   console.log("Servidor rodando na porta 3000!");
