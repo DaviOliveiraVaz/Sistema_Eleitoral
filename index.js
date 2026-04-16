@@ -24,6 +24,33 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+    if (req.session && req.session.tipoAcesso) {
+        
+        let linkHome = '/';
+        
+        switch (req.session.tipoAcesso) {
+            case 'Eleitor':
+                linkHome = '/home_eleitor';
+                break;
+            case 'Candidato':
+                linkHome = '/home_candidato';
+                break;
+            case 'Administrador':
+                linkHome = '/home_adm';
+                break;
+        }
+
+        res.locals.linkHome = linkHome; 
+        res.locals.tipoAcesso = req.session.tipoAcesso;
+    } else {
+        res.locals.linkHome = '/login';
+        res.locals.tipoAcesso = null;
+    }
+    
+    next();
+});
+
 app.get("/", function (req, res) {
   res.render("home.ejs", {});
 });
@@ -33,6 +60,9 @@ app.get("/cadastro", function (req, res) {
 });
 
 app.get("/login", function (req, res) {
+  if (req.session.id_usuario) {
+      return res.redirect(res.locals.linkHome);
+  }
   res.render("login.ejs", {});
 });
 
@@ -103,23 +133,43 @@ app.get("/sair", (req, res) => {
   });
 });
 
-app.get("/urna", function (req, res) {
+app.get("/urna", async function (req, res) {
       try {
-      Candidato.find({}).then(function (docs) {
-        res.render("urna.ejs", { Candidatos: docs });
-      });
-    } catch (error) {
-      console.error("Erro: ", error);
-      res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
-    }
+          const idUsuario = req.session.id_usuario;
+          const tipoAcesso = req.session.tipoAcesso;
+
+          if (!idUsuario) {
+              return res.status(401).send(
+                  `<script>alert("Acesso negado. Você precisa estar logado."); window.location.href="/login";</script>`
+              );
+          } 
+
+          if (tipoAcesso === 'Administrador') {
+              return res.status(403).send(
+                  `<script>alert("Administradores não têm acesso à urna de votação."); window.history.back();</script>`
+              );
+          }
+
+          const docs = await Candidato.find({});
+          res.render("urna.ejs", { Candidatos: docs });
+
+      } catch (error) {
+          console.error("Erro: ", error);
+          res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
+      }
 });
 
 app.post("/votar", async (req, res) => {
     try {
         const eleitorId = req.session.id_usuario;
+        const tipoAcesso = req.session.tipoAcesso;
 
         if (!eleitorId) {
             return res.status(401).json({ message: "Acesso negado. Você precisa estar logado para votar." });
+        }
+
+        if (tipoAcesso === 'Administrador') {
+             return res.status(403).json({ message: "Apenas eleitores cadastrados podem registrar votos." });
         }
 
         const eleitor = await Eleitor.findById(eleitorId);
@@ -131,6 +181,7 @@ app.post("/votar", async (req, res) => {
         if (eleitor.votou) {
             return res.status(400).json({ message: "Você já votou" });
         }
+
 
         const {
             deputadoEstadual,
