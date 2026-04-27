@@ -103,71 +103,98 @@ app.get("/sair", (req, res) => {
   });
 });
 
-app.get("/urna", function (req, res) {
-      try {
-      Candidato.find({}).then(function (docs) {
-        res.render("urna.ejs", { Candidatos: docs });
-      });
+app.get("/urna", async (req, res) => {
+    try {
+        const idUsuario = req.session.id_usuario;
+        const tipoAcesso = req.session.tipoAcesso;
+
+        if (!idUsuario) {
+            return res.send(
+                `<script>alert("Acesso negado. Você precisa estar logado para acessar a urna."); window.location.href="/login";</script>`
+            );
+        }
+
+        if (tipoAcesso === 'Administrador') {
+            return res.send(
+                `<script>alert("Administradores não têm acesso à urna de votação."); window.history.back();</script>`
+            );
+        }
+
+        const rotaHome = tipoAcesso === 'Candidato' ? '/home_candidato' : '/home_eleitor';
+
+        const eleitor = await Eleitor.findById(idUsuario);
+
+        if (!eleitor) {
+            return res.send(
+                `<script>alert("Eleitor não encontrado no sistema."); window.location.href="/login";</script>`
+            );
+        }
+
+        if (eleitor.votou) {
+            return res.send(
+                `<script>alert("Você já registrou seu voto! Não é permitido votar novamente."); window.location.href="${rotaHome}";</script>`
+            );
+        }
+
+        const candidatosHomologados = await Candidato.find({ status: "Homologado" });
+        
+        res.render("urna.ejs", { Candidatos: candidatosHomologados });
+
     } catch (error) {
-      console.error("Erro: ", error);
-      res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
+        console.error("Erro ao carregar a urna: ", error);
+        res.send(
+            `<script>alert("Ocorreu um erro ao carregar os dados da urna."); window.history.back();</script>`
+        );
     }
 });
 
 app.post("/votar", async (req, res) => {
     try {
-        const eleitorId = req.session.id_usuario;
+        const idUsuario = req.session.id_usuario;
+        const tipoAcesso = req.session.tipoAcesso;
 
-        if (!eleitorId) {
+        if (!idUsuario) {
             return res.status(401).json({ message: "Acesso negado. Você precisa estar logado para votar." });
         }
 
-        const eleitor = await Eleitor.findById(eleitorId);
+        if (tipoAcesso === 'Administrador') {
+            return res.status(403).json({ message: "Administradores não votam." });
+        }
+
+        const eleitor = await Eleitor.findById(idUsuario);
 
         if (!eleitor) {
             return res.status(404).json({ message: "Eleitor não encontrado." });
         }
 
         if (eleitor.votou) {
-            return res.status(400).json({ message: "Você já votou" });
+            return res.status(400).json({ message: "Você já votou." });
         }
 
-        const {
-            deputadoEstadual,
-            deputadoFederal,
-            senador,
-            governador,
-            presidente
-        } = req.body;
+        const { deputadoEstadual, deputadoFederal, senador, governador, presidente } = req.body;
 
-        async function validar(numero, cargo) {
+        async function validarCandidato(numero, cargo) {
             if (!numero) return null;
-
-            const candidato = await Candidato.findOne({
-                numero,
-                cargo,
-                homologado: true
-            });
-
+            const candidato = await Candidato.findOne({ numero, cargo, homologado: true });
             return candidato ? candidato._id : null;
         }
 
         const voto = {
-            deputadoEstadual: await validar(deputadoEstadual, "Deputado Estadual"),
-            deputadoFederal: await validar(deputadoFederal, "Deputado Federal"),
-            senador: await validar(senador, "Senador"),
-            governador: await validar(governador, "Governador"),
-            presidente: await validar(presidente, "Presidente")
+            deputadoEstadual: await validarCandidato(deputadoEstadual, "Deputado Estadual"),
+            deputadoFederal: await validarCandidato(deputadoFederal, "Deputado Federal"),
+            senador: await validarCandidato(senador, "Senador"),
+            governador: await validarCandidato(governador, "Governador"),
+            presidente: await validarCandidato(presidente, "Presidente")
         };
 
         await Voto.create({
-            eleitorId,
+            eleitorId: idUsuario,
             votos: voto
         });
 
-        for (let key in voto) {
-            if (voto[key]) {
-                await Candidato.findByIdAndUpdate(voto[key], {
+        for (let cargo in voto) {
+            if (voto[cargo]) {
+                await Candidato.findByIdAndUpdate(voto[cargo], {
                     $inc: { votos: 1 }
                 });
             }
@@ -176,11 +203,11 @@ app.post("/votar", async (req, res) => {
         eleitor.votou = true;
         await eleitor.save();
 
-        res.json({ message: "Voto registrado com sucesso" });
+        res.json({ message: "Voto registrado com sucesso!" });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Erro ao registrar voto" });
+        console.error("Erro ao processar votação:", error);
+        res.status(500).json({ message: "Erro interno ao registrar voto." });
     }
 });
 

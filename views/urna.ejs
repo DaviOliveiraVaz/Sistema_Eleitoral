@@ -98,14 +98,16 @@
         const info = document.getElementById("info-candidato");
 
         if (votoAtual.length === etapa.digitos) {
+            
+            // BUSCA CORRIGIDA:
             const candidato = candidatos.find(c =>
                 c.numero == votoAtual &&
                 c.cargo === etapa.nome &&
-                c.homologado
+                c.status === "Homologado"
             );
 
             if (candidato) {
-                info.innerText = `${candidato.nome} - ${candidato.partido}`;
+                info.innerHTML = `${candidato.nome}<br><span style="font-size: 0.9rem; font-weight: normal;">Partido: ${candidato.partido}</span>`;
             } else {
                 info.innerText = "VOTO NULO";
             }
