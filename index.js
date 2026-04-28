@@ -24,6 +24,33 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+    if (req.session && req.session.tipoAcesso) {
+        
+        let linkHome = '/';
+        
+        switch (req.session.tipoAcesso) {
+            case 'Eleitor':
+                linkHome = '/home_eleitor';
+                break;
+            case 'Candidato':
+                linkHome = '/home_candidato';
+                break;
+            case 'Administrador':
+                linkHome = '/home_adm';
+                break;
+        }
+
+        res.locals.linkHome = linkHome; 
+        res.locals.tipoAcesso = req.session.tipoAcesso;
+    } else {
+        res.locals.linkHome = '/login';
+        res.locals.tipoAcesso = null;
+    }
+    
+    next();
+});
+
 app.get("/", function (req, res) {
   res.render("home.ejs", {});
 });
@@ -33,6 +60,9 @@ app.get("/cadastro", function (req, res) {
 });
 
 app.get("/login", function (req, res) {
+  if (req.session.id_usuario) {
+      return res.redirect(res.locals.linkHome);
+  }
   res.render("login.ejs", {});
 });
 
@@ -103,49 +133,40 @@ app.get("/sair", (req, res) => {
   });
 });
 
-app.get("/urna", async (req, res) => {
-    try {
-        const idUsuario = req.session.id_usuario;
-        const tipoAcesso = req.session.tipoAcesso;
+app.get("/urna", async function (req, res) {
+      try {
+          const idUsuario = req.session.id_usuario;
+          const tipoAcesso = req.session.tipoAcesso;
+          const eleitor = await Eleitor.findById(idUsuario);
 
-        if (!idUsuario) {
-            return res.send(
-                `<script>alert("Acesso negado. Você precisa estar logado para acessar a urna."); window.location.href="/login";</script>`
-            );
-        }
+          if (!idUsuario) {
+              return res.status(401).send(
+                  `<script>alert("Acesso negado. Você precisa estar logado."); window.location.href="/login";</script>`
+              );
+          } 
 
-        if (tipoAcesso === 'Administrador') {
-            return res.send(
-                `<script>alert("Administradores não têm acesso à urna de votação."); window.history.back();</script>`
-            );
-        }
+          if (tipoAcesso === 'Administrador') {
+              return res.status(403).send(
+                  `<script>alert("Administradores não têm acesso à urna de votação."); window.history.back();</script>`
+              );
+          }
 
-        const rotaHome = tipoAcesso === 'Candidato' ? '/home_candidato' : '/home_eleitor';
+          if (eleitor.votou) {
+            return res.send(`
+                <script>
+                    alert("Você já votou.");
+                    window.location.href = "${res.locals.linkHome}";
+                </script>
+            `);
+          }
 
-        const eleitor = await Eleitor.findById(idUsuario);
+          const docs = await Candidato.find({});
+          res.render("urna.ejs", { Candidatos: docs });
 
-        if (!eleitor) {
-            return res.send(
-                `<script>alert("Eleitor não encontrado no sistema."); window.location.href="/login";</script>`
-            );
-        }
-
-        if (eleitor.votou) {
-            return res.send(
-                `<script>alert("Você já registrou seu voto! Não é permitido votar novamente."); window.location.href="${rotaHome}";</script>`
-            );
-        }
-
-        const candidatosHomologados = await Candidato.find({ status: "Homologado" });
-        
-        res.render("urna.ejs", { Candidatos: candidatosHomologados });
-
-    } catch (error) {
-        console.error("Erro ao carregar a urna: ", error);
-        res.send(
-            `<script>alert("Ocorreu um erro ao carregar os dados da urna."); window.history.back();</script>`
-        );
-    }
+      } catch (error) {
+          console.error("Erro: ", error);
+          res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
+      }
 });
 
 app.post("/votar", async (req, res) => {
@@ -164,7 +185,7 @@ app.post("/votar", async (req, res) => {
         const eleitor = await Eleitor.findById(idUsuario);
 
         if (!eleitor) {
-            return res.status(404).json({ message: "Eleitor não encontrado." });
+            return res.status(403).json({ message: "Apenas eleitores cadastrados podem registrar votos." });
         }
 
         if (eleitor.votou) {
@@ -175,7 +196,7 @@ app.post("/votar", async (req, res) => {
 
         async function validarCandidato(numero, cargo) {
             if (!numero) return null;
-            const candidato = await Candidato.findOne({ numero, cargo, homologado: true });
+            const candidato = await Candidato.findOne({ numero, cargo, status: "Homologado" });
             return candidato ? candidato._id : null;
         }
 
