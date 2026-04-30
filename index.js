@@ -5,6 +5,8 @@ const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const conexao = require("./config/database");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 require('dotenv').config();
 const Eleitor = require("./model/Eleitor");
 const Candidato = require("./model/Candidato");
@@ -67,7 +69,7 @@ app.get("/login", function (req, res) {
 });
 
 app.post('/login', async (req, res) => {
-  const { tipoLogin, cpf } = req.body;
+  const { tipoLogin, cpf, senha } = req.body;
 
   try {
     let ModeloUsuario;
@@ -96,21 +98,28 @@ app.post('/login', async (req, res) => {
       );
     }
 
-    req.session.id_usuario = usuario._id;
-    req.session.cpf = usuario.cpf;
-    req.session.tipoAcesso = tipoLogin;
-    
-    switch (tipoLogin) {
-      case 'Eleitor':
-        return res.redirect("/home_eleitor");
-      case 'Candidato':
-        return res.redirect("/home_candidato");
-      case 'Administrador':
-        return res.redirect("/home_adm");
-      default:
-        return res.redirect("/"); 
-    }
+    const match = await bcrypt.compare(senha, usuario.senha);
 
+    if (match) {
+      req.session.id_usuario = usuario._id;
+      req.session.cpf = usuario.cpf;
+      req.session.tipoAcesso = tipoLogin;
+      
+      switch (tipoLogin) {
+        case 'Eleitor':
+          return res.redirect("/home_eleitor");
+        case 'Candidato':
+          return res.redirect("/home_candidato");
+        case 'Administrador':
+          return res.redirect("/home_adm");
+        default:
+          return res.redirect("/"); 
+      }
+    } else {
+      return res.send(
+        `<script>alert("CPF ou senha incorretos."); window.history.back();</script>`
+      );
+    }
   } catch (error) {
     console.error(`Erro ao consultar o banco de dados (${tipoLogin}): `, error);
     return res.status(500).send(
@@ -302,7 +311,7 @@ app.get("/cadastro_eleitor", function (req, res) {
 
 app.post("/cadastro_eleitor", async (req, res) => {
     try {
-        const { nome, cpf, municipio, idade, naturalidade } = req.body;
+        const { nome, cpf, municipio, idade, naturalidade, senha } = req.body;
 
         const eleitorExistente = await Eleitor.findOne({ cpf: cpf });
         
@@ -315,12 +324,15 @@ app.post("/cadastro_eleitor", async (req, res) => {
             `);
         }
 
+        const hash = await bcrypt.hash(req.body.senha, saltRounds);
+
         const novoEleitor = new Eleitor({
             nome,
             cpf,
             municipio,
             idade: Number(idade),
-            naturalidade
+            naturalidade,
+            senha: hash
         });
 
         await novoEleitor.save();
@@ -343,17 +355,20 @@ app.get("/cadastro_candidato", function (req, res) {
 
 app.post("/cadastro_candidato", async (req, res) => {
     try {
-        const { nome, cpf, numero, cargo, partido, municipio, idade, naturalidade } = req.body;
-        const existente = await Candidato.findOne({ $or: [{ cpf }, { numero }] });
+        const { nome, cpf, municipio, idade, naturalidade, senha } = req.body;
+        const existente = await Candidato.findOne({ $or: [{ cpf }] });
         if (existente) {
-            return res.send("<script>alert('CPF ou Número já cadastrado!'); window.history.back();</script>");
+            return res.send("<script>alert('CPF já cadastrado!'); window.history.back();</script>");
         }
+
+        const hash = await bcrypt.hash(req.body.senha, saltRounds);
+
         const novoCandidato = new Candidato({
-            nome, cpf, numero: Number(numero), cargo, partido, municipio, 
-            idade: Number(idade), naturalidade, status: "Pendente"
+            nome, cpf, municipio, 
+            idade: Number(idade), naturalidade, senha: hash
         });
         await novoCandidato.save();
-        res.send("<script>alert('Candidatura enviada! Aguarde homologação.'); window.location.href = '/login';</script>");
+        res.send("<script>alert('Cadastro concluído! Faça login no portal para lançar sua candidatura.'); window.location.href = '/login';</script>");
     } catch (error) {
         res.status(500).send("Erro ao cadastrar candidato.");
     }
@@ -382,6 +397,55 @@ app.get("/consulta_candidatos", async (req, res) => {
     } catch (error) {
         console.error("Erro ao carregar candidatos:", error);
         res.status(500).send("Erro ao carregar a lista de candidatos.");
+    }
+});
+
+app.get("/minha_candidatura", async (req, res) => {
+    try {
+        const idUsuario = req.session.id_usuario;
+
+        if (!idUsuario || req.session.tipoAcesso !== 'Candidato') {
+            return res.send(`<script>alert("Acesso negado."); window.location.href="/login";</script>`);
+        }
+
+        const candidato = await Candidato.findById(idUsuario);
+
+        if (!candidato) {
+            return res.send(`<script>alert("Candidato não encontrado."); window.location.href="/login";</script>`);
+        }
+
+        res.render("candidatura.ejs", { candidato });
+
+    } catch (error) {
+        console.error("Erro ao carregar candidatura:", error);
+        res.status(500).send("Erro interno ao carregar a página.");
+    }
+});
+
+app.post("/lancar_candidatura", async (req, res) => {
+    try {
+        const idUsuario = req.session.id_usuario;
+        const { numero, cargo, partido, slogan, descricao } = req.body;
+
+        const numeroEmUso = await Candidato.findOne({ numero: Number(numero), cargo: cargo });
+        if (numeroEmUso) {
+            return res.send(`<script>alert("Esse número já está registrado para este cargo!"); window.history.back();</script>`);
+        }
+
+        await Candidato.findByIdAndUpdate(idUsuario, {
+            numero: Number(numero),
+            cargo,
+            partido,
+            slogan,
+            descricao,
+            status: "Pendente"
+        });
+
+        res.send(`<script>alert("Candidatura lançada com sucesso! Aguarde a homologação do administrador."); window.location.href="/minha_candidatura";</script>`);
+
+    } catch (error) {
+        console.error("Erro ao lançar candidatura:", error);
+        res.status(500).send(`<script>alert("Erro ao lançar candidatura."); window.history.back();</script>`);
     }
 });
 

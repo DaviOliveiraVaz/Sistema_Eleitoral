@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Candidatura</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #f4f7f6; font-family: sans-serif; padding: 20px;">
+
+    <div style="max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        
+        <h2>Central do Candidato</h2>
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+        <% if (candidato.cargo) { %>
+            
+            <div style="text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #fafafa;">
+                <h3 style="color: #333; margin-bottom: 10px;">Status da sua Candidatura</h3>
+                
+                <% 
+                    let corStatus = '#f1c40f'; // Amarelo (Pendente)
+                    if (candidato.status === 'Homologado') corStatus = '#2ecc71'; // Verde
+                    if (candidato.status === 'Rejeitado') corStatus = '#e74c3c'; // Vermelho
+                %>
+                <span style="display: inline-block; padding: 8px 16px; background-color: <%= corStatus %>; color: white; font-weight: bold; border-radius: 20px; font-size: 1.2rem;">
+                    <%= candidato.status %>
+                </span>
+
+                <div style="margin-top: 30px; text-align: left;">
+                    <p><strong>Nome na Urna:</strong> <%= candidato.nome %></p>
+                    <p><strong>Cargo:</strong> <%= candidato.cargo %></p>
+                    <p><strong>Número:</strong> <%= candidato.numero %></p>
+                    <p><strong>Partido:</strong> <%= candidato.partido %></p>
+                    <p><strong>Slogan:</strong> <%= candidato.slogan || 'Não informado' %></p>
+                    <p><strong>Objetivo/Descrição:</strong><br> <%= candidato.descricao || 'Nenhuma descrição fornecida.' %></p>
+                </div>
+            </div>
+
+        <% } else { %>
+
+            <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                <strong>Atenção:</strong> Você ainda não lançou sua candidatura. Preencha os dados abaixo para enviar para análise do Administrador.
+            </div>
+
+            <form action="/lancar_candidatura" method="POST">
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px;">Cargo Pretendido</label>
+                        <select id="select-cargo" name="cargo" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="Presidente">Presidente</option>
+                            <option value="Governador">Governador</option>
+                            <option value="Senador">Senador</option>
+                            <option value="Deputado Federal">Deputado Federal</option>
+                            <option value="Deputado Estadual">Deputado Estadual</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px;">Número de Campanha</label>
+                        <input type="number" id="input-numero" name="numero" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Partido (Sigla)</label>
+                    <input type="text" name="partido" placeholder="Ex: PTADS" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Slogan da Campanha</label>
+                    <input type="text" name="slogan" placeholder="Uma frase curta de efeito" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px;">Descrição / Objetivo</label>
+                    <textarea name="descricao" rows="4" placeholder="Quais são as suas propostas?" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd;"></textarea>
+                </div>
+
+                <button type="submit" style="width: 100%; padding: 15px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer;">
+                    Lançar Candidatura
+                </button>
+            </form>
+
+        <% } %>
+
+        <br><br>
+        <a href="<%= linkHome %>" style="color: #555; text-decoration: none;">← Voltar para a Home</a>
+
+    </div>
+
+    <script>
+        const regrasCargos = {
+            "Presidente": { digitos: 2, placeholder: "Ex: 12" },
+            "Governador": { digitos: 2, placeholder: "Ex: 45" },
+            "Senador": { digitos: 3, placeholder: "Ex: 123" },
+            "Deputado Federal": { digitos: 4, placeholder: "Ex: 1234" },
+            "Deputado Estadual": { digitos: 5, placeholder: "Ex: 12345" }
+        };
+
+        const selectCargo = document.getElementById("select-cargo");
+        const inputNumero = document.getElementById("input-numero");
+
+        if(selectCargo && inputNumero) {
+            function atualizarValidacao() {
+                const regra = regrasCargos[selectCargo.value];
+                if (regra) {
+                    inputNumero.min = Math.pow(10, regra.digitos - 1);
+                    inputNumero.max = Math.pow(10, regra.digitos) - 1;
+                    inputNumero.placeholder = regra.placeholder;
+                    if (inputNumero.value && inputNumero.value.length !== regra.digitos) inputNumero.value = "";
+                }
+            }
+            selectCargo.addEventListener("change", atualizarValidacao);
+            atualizarValidacao();
+        }
+    </script>
+</body>
+</html>

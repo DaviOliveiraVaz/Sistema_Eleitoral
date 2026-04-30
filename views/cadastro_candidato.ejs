@@ -10,7 +10,7 @@
     <div class="login-wrapper">
         <header class="login-header">
             <h1>Cadastro de Candidato</h1>
-            <p>Insira seus dados completos para lançar a sua candidatura</p>
+            <p>Insira seus dados completos para realizar o seu cadastro</p>
         </header>
         <div style="padding: 30px;">
             <form action="/cadastro_candidato" method="POST">
@@ -39,29 +39,10 @@
                     <label>Naturalidade</label>
                     <input type="text" name="naturalidade" placeholder="Cidade/UF">
                 </div>
-                
-                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-                
-                <div style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Número de Campanha</label>
-                        <input type="number" id="input-numero" name="numero" placeholder="Ex: 12" required>
-                    </div>
-                    <div class="form-group" style="flex: 2;">
-                        <label>Partido (Sigla)</label>
-                        <input type="text" name="partido" placeholder="Ex: PTADS" required>
-                    </div>
-                </div>
-                
+
                 <div class="form-group">
-                    <label>Cargo Pretendido</label>
-                    <select id="select-cargo" name="cargo" required style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #ddd; background: white;">
-                        <option value="Presidente">Presidente</option>
-                        <option value="Governador">Governador</option>
-                        <option value="Senador">Senador</option>
-                        <option value="Deputado Federal">Deputado Federal</option>
-                        <option value="Deputado Estadual">Deputado Estadual</option>
-                    </select>
+                    <label>Senha</label>
+                    <input type="password" name="senha" placeholder="Senha">
                 </div>
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px; padding: 15px;">

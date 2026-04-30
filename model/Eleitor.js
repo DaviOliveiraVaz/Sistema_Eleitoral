@@ -7,7 +7,8 @@ const EleitorSchema = new Schema({
   idade: { type: Number, required: true },
   naturalidade: { type: String, required: false },
   nacionalidade: { type: String, required: true, default: "Brasileira" },
-  votou: { type: Boolean, default: false }
+  votou: { type: Boolean, default: false },
+  senha:     { type: String, required: true }
 });
 
 module.exports = model("Eleitor", EleitorSchema, "Eleitores");
