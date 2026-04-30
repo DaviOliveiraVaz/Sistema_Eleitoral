@@ -449,6 +449,60 @@ app.post("/lancar_candidatura", async (req, res) => {
     }
 });
 
+app.get("/perfil", async (req, res) => {
+    try {
+        const idUsuario = req.session.id_usuario;
+        const tipoAcesso = req.session.tipoAcesso;
+
+        if (!idUsuario || tipoAcesso === 'Administrador') {
+            return res.redirect(res.locals.linkHome);
+        }
+
+        let usuario;
+        if (tipoAcesso === 'Eleitor') {
+            usuario = await Eleitor.findById(idUsuario);
+        } else if (tipoAcesso === 'Candidato') {
+            usuario = await Candidato.findById(idUsuario);
+        }
+
+        res.render("perfil.ejs", { usuario, tipoAcesso });
+    } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+        res.status(500).send("Erro interno ao carregar o perfil.");
+    }
+});
+
+app.post("/perfil/editar", async (req, res) => {
+    try {
+        const idUsuario = req.session.id_usuario;
+        const tipoAcesso = req.session.tipoAcesso;
+        const { nome, idade, municipio, naturalidade } = req.body;
+
+        if (!idUsuario || tipoAcesso === 'Administrador') {
+            return res.redirect("/login");
+        }
+
+        let Modelo = tipoAcesso === 'Eleitor' ? Eleitor : Candidato;
+
+        await Modelo.findByIdAndUpdate(idUsuario, {
+            nome,
+            idade: Number(idade),
+            municipio,
+            naturalidade
+        });
+
+        res.send(`
+            <script>
+                alert('Dados atualizados com sucesso!');
+                window.location.href = "/perfil";
+            </script>
+        `);
+    } catch (error) {
+        console.error("Erro ao atualizar perfil:", error);
+        res.status(500).send("Erro ao salvar as alterações.");
+    }
+});
+
 app.listen("3000", function () {
   console.log("Servidor rodando na porta 3000!");
 });
