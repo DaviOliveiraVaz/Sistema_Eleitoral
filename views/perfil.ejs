@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Meu Perfil</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-layout">
+        <nav class="sidebar">
+            <h2>Portal <%= tipoAcesso %></h2>
+            <ul class="sidebar-menu">
+                <li><a href="<%= linkHome %>">Início</a></li>
+                <li><a href="/perfil" style="background: #3498db;">Meus Dados</a></li>
+                <li><a href="/sair" style="color: #e74c3c;">Sair</a></li>
+            </ul>
+        </nav>
+
+        <main class="content-area">
+            <div class="login-wrapper" style="max-width: 700px; margin: 0 auto;">
+                <header class="login-header">
+                    <h1>Meus Dados</h1>
+                    <p>Gerencie suas informações pessoais</p>
+                </header>
+
+                <form action="/perfil/editar" method="POST" style="padding: 30px;">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" name="nome" value="<%= usuario.nome %>" required>
+                    </div>
+
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>CPF (Apenas Leitura)</label>
+                            <input type="text" value="<%= usuario.cpf %>" disabled style="background: #eee;">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Idade</label>
+                            <input type="number" name="idade" value="<%= usuario.idade %>" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Município</label>
+                        <input type="text" name="municipio" value="<%= usuario.municipio %>" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Naturalidade</label>
+                        <input type="text" name="naturalidade" value="<%= usuario.naturalidade %>">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>Situação do Voto</label>
+                        <div style="margin-top: 5px;">
+                            <% if (usuario.votou) { %>
+                                <span style="display: inline-block; padding: 6px 12px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
+                                    ● Voto Confirmado
+                                </span>
+                            <% } else { %>
+                                <span style="display: inline-block; padding: 6px 12px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
+                                    ○ Ainda não votou
+                                </span>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <% if (tipoAcesso === 'Candidato' && usuario.cargo) { %>
+                        <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; border: 1px solid #d0e7ff; margin-bottom: 20px; margin-top: 20px;">
+                            <h4 style="color: #0056b3; margin-bottom: 10px;">Dados da Candidatura</h4>
+                            <p><strong>Cargo:</strong> <%= usuario.cargo %></p>
+                            <p><strong>Número:</strong> <%= usuario.numero %></p>
+                            <p><strong>Status:</strong> <%= usuario.status %></p>
+                        </div>
+                    <% } %>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; margin-top: 20px;">Salvar Alterações</button>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
