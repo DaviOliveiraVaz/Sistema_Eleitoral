@@ -5,8 +5,6 @@ const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const conexao = require("./config/database");
-const bcrypt = require("bcrypt");
-const saltRounds = 10;
 require('dotenv').config();
 const Eleitor = require("./model/Eleitor");
 const Candidato = require("./model/Candidato");
@@ -69,7 +67,7 @@ app.get("/login", function (req, res) {
 });
 
 app.post('/login', async (req, res) => {
-  const { tipoLogin, cpf, senha } = req.body;
+  const { tipoLogin, cpf } = req.body;
 
   try {
     let ModeloUsuario;
@@ -98,28 +96,21 @@ app.post('/login', async (req, res) => {
       );
     }
 
-    const match = await bcrypt.compare(senha, usuario.senha);
-
-    if (match) {
-      req.session.id_usuario = usuario._id;
-      req.session.cpf = usuario.cpf;
-      req.session.tipoAcesso = tipoLogin;
-      
-      switch (tipoLogin) {
-        case 'Eleitor':
-          return res.redirect("/home_eleitor");
-        case 'Candidato':
-          return res.redirect("/home_candidato");
-        case 'Administrador':
-          return res.redirect("/home_adm");
-        default:
-          return res.redirect("/"); 
-      }
-    } else {
-      return res.send(
-        `<script>alert("CPF ou senha incorretos."); window.history.back();</script>`
-      );
+    req.session.id_usuario = usuario._id;
+    req.session.cpf = usuario.cpf;
+    req.session.tipoAcesso = tipoLogin;
+    
+    switch (tipoLogin) {
+      case 'Eleitor':
+        return res.redirect("/home_eleitor");
+      case 'Candidato':
+        return res.redirect("/home_candidato");
+      case 'Administrador':
+        return res.redirect("/home_adm");
+      default:
+        return res.redirect("/"); 
     }
+
   } catch (error) {
     console.error(`Erro ao consultar o banco de dados (${tipoLogin}): `, error);
     return res.status(500).send(
@@ -311,7 +302,7 @@ app.get("/cadastro_eleitor", function (req, res) {
 
 app.post("/cadastro_eleitor", async (req, res) => {
     try {
-        const { nome, cpf, municipio, idade, naturalidade, senha } = req.body;
+        const { nome, cpf, municipio, idade, naturalidade } = req.body;
 
         const eleitorExistente = await Eleitor.findOne({ cpf: cpf });
         
@@ -324,15 +315,12 @@ app.post("/cadastro_eleitor", async (req, res) => {
             `);
         }
 
-        const hash = await bcrypt.hash(req.body.senha, saltRounds);
-
         const novoEleitor = new Eleitor({
             nome,
             cpf,
             municipio,
             idade: Number(idade),
-            naturalidade,
-            senha: hash
+            naturalidade
         });
 
         await novoEleitor.save();
@@ -355,20 +343,17 @@ app.get("/cadastro_candidato", function (req, res) {
 
 app.post("/cadastro_candidato", async (req, res) => {
     try {
-        const { nome, cpf, municipio, idade, naturalidade, senha } = req.body;
-        const existente = await Candidato.findOne({ $or: [{ cpf }] });
+        const { nome, cpf, numero, cargo, partido, municipio, idade, naturalidade } = req.body;
+        const existente = await Candidato.findOne({ $or: [{ cpf }, { numero }] });
         if (existente) {
-            return res.send("<script>alert('CPF já cadastrado!'); window.history.back();</script>");
+            return res.send("<script>alert('CPF ou Número já cadastrado!'); window.history.back();</script>");
         }
-
-        const hash = await bcrypt.hash(req.body.senha, saltRounds);
-
         const novoCandidato = new Candidato({
-            nome, cpf, municipio, 
-            idade: Number(idade), naturalidade, senha: hash
+            nome, cpf, numero: Number(numero), cargo, partido, municipio, 
+            idade: Number(idade), naturalidade, status: "Pendente"
         });
         await novoCandidato.save();
-        res.send("<script>alert('Cadastro concluído! Faça login no portal para lançar sua candidatura.'); window.location.href = '/login';</script>");
+        res.send("<script>alert('Candidatura enviada! Aguarde homologação.'); window.location.href = '/login';</script>");
     } catch (error) {
         res.status(500).send("Erro ao cadastrar candidato.");
     }
@@ -380,9 +365,13 @@ app.get("/home_candidato", (req, res) => res.render("home_candidato.ejs"));
 
 app.get("/home_adm", (req, res) => res.render("home_adm.ejs"));
 
+// CORREÇÃO: Administrador vê todos os candidatos; outros veem apenas Homologados
 app.get("/consulta_candidatos", async (req, res) => {
     try {
-        const candidatos = await Candidato.find({ status: "Homologado" }).sort({ nome: 1 });
+        const tipoAcesso = req.session.tipoAcesso;
+        const filtro = tipoAcesso === 'Administrador' ? {} : { status: "Homologado" };
+
+        const candidatos = await Candidato.find(filtro).sort({ nome: 1 });
 
         const candidatosPorCargo = {};
         candidatos.forEach(candidato => {
@@ -400,106 +389,59 @@ app.get("/consulta_candidatos", async (req, res) => {
     }
 });
 
-app.get("/minha_candidatura", async (req, res) => {
+app.get("/lista_candidatos", async (req, res) => {
     try {
-        const idUsuario = req.session.id_usuario;
+        const candidatos = await Candidato.find({ status: "Homologado" }).sort({ nome: 1 });
 
-        if (!idUsuario || req.session.tipoAcesso !== 'Candidato') {
-            return res.send(`<script>alert("Acesso negado."); window.location.href="/login";</script>`);
-        }
-
-        const candidato = await Candidato.findById(idUsuario);
-
-        if (!candidato) {
-            return res.send(`<script>alert("Candidato não encontrado."); window.location.href="/login";</script>`);
-        }
-
-        res.render("candidatura.ejs", { candidato });
-
-    } catch (error) {
-        console.error("Erro ao carregar candidatura:", error);
-        res.status(500).send("Erro interno ao carregar a página.");
-    }
-});
-
-app.post("/lancar_candidatura", async (req, res) => {
-    try {
-        const idUsuario = req.session.id_usuario;
-        const { numero, cargo, partido, slogan, descricao } = req.body;
-
-        const numeroEmUso = await Candidato.findOne({ numero: Number(numero), cargo: cargo });
-        if (numeroEmUso) {
-            return res.send(`<script>alert("Esse número já está registrado para este cargo!"); window.history.back();</script>`);
-        }
-
-        await Candidato.findByIdAndUpdate(idUsuario, {
-            numero: Number(numero),
-            cargo,
-            partido,
-            slogan,
-            descricao,
-            status: "Pendente"
+        const candidatosPorCargo = {};
+        candidatos.forEach(candidato => {
+            if (!candidatosPorCargo[candidato.cargo]) {
+                candidatosPorCargo[candidato.cargo] = [];
+            }
+            candidatosPorCargo[candidato.cargo].push(candidato);
         });
 
-        res.send(`<script>alert("Candidatura lançada com sucesso! Aguarde a homologação do administrador."); window.location.href="/minha_candidatura";</script>`);
+        res.render("lista_candidatos.ejs", { candidatosPorCargo });
 
     } catch (error) {
-        console.error("Erro ao lançar candidatura:", error);
-        res.status(500).send(`<script>alert("Erro ao lançar candidatura."); window.history.back();</script>`);
+        console.error("Erro ao carregar candidatos:", error);
+        res.status(500).send("Erro ao carregar a lista de candidatos.");
     }
 });
 
-app.get("/perfil", async (req, res) => {
+app.post("/candidatos/:id/editar", async (req, res) => {
     try {
-        const idUsuario = req.session.id_usuario;
-        const tipoAcesso = req.session.tipoAcesso;
-
-        if (!idUsuario || tipoAcesso === 'Administrador') {
-            return res.redirect(res.locals.linkHome);
+        if (req.session.tipoAcesso !== 'Administrador') {
+            return res.status(403).send("<script>alert('Acesso negado.'); window.history.back();</script>");
         }
 
-        let usuario;
-        if (tipoAcesso === 'Eleitor') {
-            usuario = await Eleitor.findById(idUsuario);
-        } else if (tipoAcesso === 'Candidato') {
-            usuario = await Candidato.findById(idUsuario);
-        }
+        const { nome, partido, municipio, numero, status } = req.body;
 
-        res.render("perfil.ejs", { usuario, tipoAcesso });
-    } catch (error) {
-        console.error("Erro ao carregar perfil:", error);
-        res.status(500).send("Erro interno ao carregar o perfil.");
-    }
-});
-
-app.post("/perfil/editar", async (req, res) => {
-    try {
-        const idUsuario = req.session.id_usuario;
-        const tipoAcesso = req.session.tipoAcesso;
-        const { nome, idade, municipio, naturalidade } = req.body;
-
-        if (!idUsuario || tipoAcesso === 'Administrador') {
-            return res.redirect("/login");
-        }
-
-        let Modelo = tipoAcesso === 'Eleitor' ? Eleitor : Candidato;
-
-        await Modelo.findByIdAndUpdate(idUsuario, {
-            nome,
-            idade: Number(idade),
-            municipio,
-            naturalidade
+        await Candidato.findByIdAndUpdate(req.params.id, {
+            nome, partido, municipio, numero: Number(numero), status
         });
 
-        res.send(`
-            <script>
-                alert('Dados atualizados com sucesso!');
-                window.location.href = "/perfil";
-            </script>
-        `);
+        res.send("<script>alert('Candidato atualizado com sucesso!'); window.location.href='/consulta_candidatos';</script>");
+
     } catch (error) {
-        console.error("Erro ao atualizar perfil:", error);
-        res.status(500).send("Erro ao salvar as alterações.");
+        console.error("Erro ao editar candidato:", error);
+        res.status(500).send("Erro ao editar candidato.");
+    }
+});
+
+app.post("/candidatos/:id/excluir", async (req, res) => {
+    try {
+        if (req.session.tipoAcesso !== 'Administrador') {
+            return res.status(403).send("<script>alert('Acesso negado.'); window.history.back();</script>");
+        }
+
+        await Candidato.findByIdAndDelete(req.params.id);
+
+        res.send("<script>alert('Candidato excluído com sucesso!'); window.location.href='/consulta_candidatos';</script>");
+
+    } catch (error) {
+        console.error("Erro ao excluir candidato:", error);
+        res.status(500).send("Erro ao excluir candidato.");
     }
 });
 
