@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Candidatura</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="view active">
+            <h2>Central do Candidato</h2>
+
+            <% if (candidato.cargo) { %>
+                <div class="login-card" style="max-width: 100%; cursor: default;">
+                    <h3>Status da sua Candidatura</h3>
+                    
+                    <% 
+                        let classeStatus = 'status-pendente';
+                        if (candidato.status === 'Homologado') classeStatus = 'status-aprovado';
+                        if (candidato.status === 'Rejeitado') classeStatus = 'status-rejeitado';
+                    %>
+                    <span class="<%= classeStatus %>" style="font-size: 1.5rem;">
+                        <%= candidato.status %>
+                    </span>
+
+                    <div style="text-align: left; margin-top: 20px;">
+                        <p><strong>Nome na Urna:</strong> <%= candidato.nome %></p>
+                        <p><strong>Cargo:</strong> <%= candidato.cargo %></p>
+                        <p><strong>Número:</strong> <%= candidato.numero %></p>
+                        <p><strong>Partido:</strong> <%= candidato.partido %></p>
+                        <p><strong>Slogan:</strong> <%= candidato.slogan || 'Não informado' %></p>
+                        <p><strong>Objetivo/Descrição:</strong><br> <%= candidato.descricao || 'Nenhuma descrição fornecida.' %></p>
+                    </div>
+                </div>
+
+            <% } else { %>
+
+                <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                    <strong>Atenção:</strong> Você ainda não lançou sua candidatura. Preencha os dados abaixo.
+                </div>
+
+                <form action="/lancar_candidatura" method="POST">
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Cargo Pretendido</label>
+                            <select id="select-cargo" name="cargo" required class="form-group" style="width: 100%; padding: 10px;">
+                                <option value="Presidente">Presidente</option>
+                                <option value="Governador">Governador</option>
+                                <option value="Senador">Senador</option>
+                                <option value="Deputado Federal">Deputado Federal</option>
+                                <option value="Deputado Estadual">Deputado Estadual</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Número de Campanha</label>
+                            <input type="number" id="input-numero" name="numero" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Partido (Sigla)</label>
+                        <input type="text" name="partido" placeholder="Ex: PTADS" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Slogan da Campanha</label>
+                        <input type="text" name="slogan" placeholder="Uma frase curta de efeito">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição / Objetivo</label>
+                        <textarea name="descricao" rows="4" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Lançar Candidatura
+                    </button>
+                </form>
+            <% } %>
+
+            <br>
+            <a href="<%= linkHome %>" class="btn-voltar" style="text-decoration: none;">← Voltar para a Home</a>
+        </div>
+    </div>
+
+    <script>
+        const regrasCargos = {
+            "Presidente": { digitos: 2, placeholder: "Ex: 12" },
+            "Governador": { digitos: 2, placeholder: "Ex: 45" },
+            "Senador": { digitos: 3, placeholder: "Ex: 123" },
+            "Deputado Federal": { digitos: 4, placeholder: "Ex: 1234" },
+            "Deputado Estadual": { digitos: 5, placeholder: "Ex: 12345" }
+        };
+
+        const selectCargo = document.getElementById("select-cargo");
+        const inputNumero = document.getElementById("input-numero");
+
+        if(selectCargo && inputNumero) {
+            function atualizarValidacao() {
+                const regra = regrasCargos[selectCargo.value];
+                if (regra) {
+                    inputNumero.min = Math.pow(10, regra.digitos - 1);
+                    inputNumero.max = Math.pow(10, regra.digitos) - 1;
+                    inputNumero.placeholder = regra.placeholder;
+                    if (inputNumero.value && inputNumero.value.length !== regra.digitos) inputNumero.value = "";
+                }
+            }
+            selectCargo.addEventListener("change", atualizarValidacao);
+            atualizarValidacao();
+        }
+    </script>
+</body>
+</html>

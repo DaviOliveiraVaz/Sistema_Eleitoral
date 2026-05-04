@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Candidatos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="view active">
+            <header style="text-align: center; margin-bottom: 30px;">
+                <h2>Consulta de Candidatos</h2>
+                <p>Selecione um cargo para filtrar a lista</p>
+            </header>
+
+            <div class="form-group">
+                <label for="filtroCargo">Filtrar por Cargo:</label>
+                <select id="filtroCargo" style="width: 100%; padding: 12px; border-radius: 4px;" onchange="filtrarCandidatos()">
+                    <option value="Todos">Todos os Cargos</option>
+                    <% for (let cargo in candidatosPorCargo) { %>
+                        <option value="<%= cargo.replace(/\s/g, '') %>"><%= cargo %></option>
+                    <% } %>
+                </select>
+            </div>
+
+            <div id="listaCandidatos">
+                <% for (let cargo in candidatosPorCargo) { %>
+                    <% const candidatosDoCargo = candidatosPorCargo[cargo]; %>
+                    <% if (candidatosDoCargo.length > 0) { %>
+                        <div class="grupo-cargo" id="grupo-<%= cargo.replace(/\s/g, '') %>">
+                            <h3 class="section-title" style="color: #3498db; border-color: #3498db;"><%= cargo %></h3>
+                            <div style="display: grid; gap: 15px; margin-top: 20px;">
+                                <% candidatosDoCargo.forEach((candidato) => { %>
+                                    <div class="instruction-item" style="display: flex; justify-content: space-between; align-items: center; text-align: left;">
+                                        <div>
+                                            <strong style="font-size: 1.2rem;"><%= candidato.nome %></strong><br>
+                                            <span>Partido: <strong><%= candidato.partido %></strong></span><br>
+                                            <span>Município: <%= candidato.municipio %></span>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <span style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;"><%= candidato.numero %></span><br>
+                                            <span class="status-aprovado" style="font-size: 0.8rem;"><%= candidato.status %></span>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                    <% } %>
+                <% } %>
+            </div>
+
+            <br>
+            <a href="<%= linkHome %>" class="btn btn-voltar" style="text-decoration: none;">⬅ Voltar</a>
+        </div>
+    </div>
+
+    <script>
+        function filtrarCandidatos() {
+            const valorSelecionado = document.getElementById('filtroCargo').value;
+            const grupos = document.querySelectorAll('.grupo-cargo');
+            grupos.forEach(grupo => {
+                grupo.style.display = (valorSelecionado === 'Todos' || grupo.id === 'grupo-' + valorSelecionado) ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

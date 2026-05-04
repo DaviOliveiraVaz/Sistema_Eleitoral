@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Eleitoral - Cadastro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page"> 
+    <div class="login-wrapper">
+        <header class="login-header">
+            <h1>Cadastro de Eleitor</h1>
+            <p>Insira seus dados para habilitar o acesso à urna</p>
+        </header>
+        
+        <div class="home-content">
+            <form action="/cadastro_eleitor" method="POST">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" name="nome" placeholder="Seu nome" required>
+                </div>
+
+                <div class="form-group">
+                    <label>CPF</label>
+                    <input type="text" name="cpf" placeholder="000.000.000-00" maxlength="11" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" name="senha" placeholder="Senha" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Município</label>
+                    <input type="text" name="municipio" placeholder="Sua cidade" required>
+                </div>
+
+                <div class="instructions-container">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Idade</label>
+                        <input type="number" name="idade" required>
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label>Naturalidade</label>
+                        <input type="text" name="naturalidade" placeholder="Cidade/UF">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px; margin-top: 15px;">
+                    Finalizar Cadastro
+                </button>
+            </form>
+        </div>
+
+        <footer class="login-footer">
+            <button class="btn btn-voltar" onclick="window.location.href='/cadastro'">⬅ Voltar</button>
+        </footer>
+    </div>
+</body>
+</html>

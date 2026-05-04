@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados da Eleição</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="view active">
+            <h2>Resultados Parciais</h2>
+
+            <% for (let cargo in resultadosPorCargo) { %>
+                <% const candidatosDoCargo = resultadosPorCargo[cargo]; %>
+                <% if (candidatosDoCargo.length > 0) { %>
+                    <h3 class="section-title" style="color: #3498db; border-color: #3498db;"><%= cargo %></h3>
+
+                    <div class="instructions-container">
+                        <div class="instruction-item" style="text-align: left;">
+                            <h4>Ranking</h4>
+                            <ul style="list-style: none; padding: 0; line-height: 2;">
+                                <% candidatosDoCargo.forEach((candidato, index) => { %>
+                                    <li>
+                                        <strong><%= index + 1 %>º</strong> - 
+                                        <%= candidato.nome %> (<%= candidato.numero %>) - 
+                                        <strong class="status-aprovado"><%= candidato.votos %> votos</strong>
+                                    </li>
+                                <% }) %>
+                            </ul>
+                        </div>
+
+                        <div class="instruction-item" style="display: flex; justify-content: center; background-color: #fff;">
+                            <canvas id="grafico-<%= cargo.replace(/\s/g, '') %>" width="250" height="250"></canvas>
+                        </div>
+                    </div>
+                <% } %>
+            <% } %>
+
+            <br>
+            <a href="<%= linkHome %>" class="btn btn-primary" style="text-decoration: none;">← Voltar</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const dadosCompletos = <%- JSON.stringify(resultadosPorCargo) %>;
+        const cores = ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22'];
+
+        for (let cargo in dadosCompletos) {
+            const candidatos = dadosCompletos[cargo];
+            if (candidatos.length > 0) {
+                const canvasId = 'grafico-' + cargo.replace(/\s/g, '');
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: candidatos.map(c => c.nome),
+                        datasets: [{
+                            data: candidatos.map(c => c.votos),
+                            backgroundColor: cores.slice(0, candidatos.length)
+                        }]
+                    },
+                    options: { responsive: false }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

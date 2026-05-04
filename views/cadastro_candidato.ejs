@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Eleitoral - Cadastro Candidato</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page"> 
+    <div class="login-wrapper">
+        <header class="login-header">
+            <h1>Cadastro de Candidato</h1>
+            <p>Insira seus dados completos para realizar o seu cadastro</p>
+        </header>
+        <div class="home-content">
+            <form action="/cadastro_candidato" method="POST">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" name="nome" placeholder="Seu nome" required>
+                </div>
+                
+                <div class="instructions-container">
+                    <div class="form-group" style="flex: 1;">
+                        <label>CPF</label> 
+                        <input type="text" name="cpf" placeholder="000.000.000-00" maxlength="11" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Idade</label>
+                        <input type="number" name="idade" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Município</label>
+                    <input type="text" name="municipio" placeholder="Cidade onde vota e concorre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Naturalidade</label>
+                    <input type="text" name="naturalidade" placeholder="Cidade/UF">
+                </div>
+
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" name="senha" placeholder="Senha">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px;">
+                    Finalizar Cadastro de Candidatura
+                </button>
+            </form>
+        </div>
+        <footer class="login-footer">
+            <button class="btn btn-voltar" onclick="window.location.href='/cadastro'">⬅ Voltar</button>
+        </footer>
+    </div>
+</body>
+</html>

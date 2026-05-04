@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urna Eletrônica</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="urna-page">
+
+    <div id="urna" class="container">
+        <div class="urna-container">
+            <!-- TELA DA URNA -->
+            <div class="urna-tela">
+                <div>
+                    <div class="tela-header">
+                        Seu voto para<br><br><span id="cargo-nome">DEPUTADO ESTADUAL</span>
+                    </div>
+
+                    <!-- AREA DOS NUMEROS: onde os dígitos aparecem -->
+                    <div class="tela-numeros">
+                        <!-- Os elementos .digito serão gerados aqui pelo JavaScript -->
+                    </div>
+
+                    <div id="info-candidato" style="min-height: 80px; margin-top: 20px; font-weight: bold;"></div>
+                </div>
+
+                <div class="tela-rodape">
+                    Aperte a tecla:<br>
+                    VERDE para CONFIRMAR<br>
+                    LARANJA para CORRIGIR
+                </div>
+            </div>
+
+            <!-- TECLADO DA URNA -->
+            <div class="urna-teclado">
+                <div class="teclado-numeros">
+                    <button class="tecla" onclick="inserirNumero(1)">1</button>
+                    <button class="tecla" onclick="inserirNumero(2)">2</button>
+                    <button class="tecla" onclick="inserirNumero(3)">3</button>
+                    <button class="tecla" onclick="inserirNumero(4)">4</button>
+                    <button class="tecla" onclick="inserirNumero(5)">5</button>
+                    <button class="tecla" onclick="inserirNumero(6)">6</button>
+                    <button class="tecla" onclick="inserirNumero(7)">7</button>
+                    <button class="tecla" onclick="inserirNumero(8)">8</button>
+                    <button class="tecla" onclick="inserirNumero(9)">9</button>
+                    <div></div>
+                    <button class="tecla" onclick="inserirNumero(0)">0</button>
+                    <div></div>
+                </div>
+
+                <div class="teclado-acoes">
+                    <button class="tecla-acao tecla-branco" onclick="votarBranco()">Branco</button>
+                    <button class="tecla-acao tecla-corrige" onclick="corrigirVoto()">Corrige</button>
+                    <button class="tecla-acao tecla-confirma" onclick="confirmarVoto()">Confirma</button>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="<%= linkHome %>" class="btn-voltar" style="text-decoration: none; display: inline-block;">← Voltar</a>
+        </div>
+    </div>
+
+    <script>
+    const cargos = [
+        { nome: "Deputado Estadual", chave: "deputadoEstadual", digitos: 5 },
+        { nome: "Deputado Federal", chave: "deputadoFederal", digitos: 4 },
+        { nome: "Senador", chave: "senador", digitos: 3 },
+        { nome: "Governador", chave: "governador", digitos: 2 },
+        { nome: "Presidente", chave: "presidente", digitos: 2 }
+    ];
+
+    let etapaAtual = 0;
+    let votoAtual = "";
+    let votos = {};
+    const candidatos = <%- JSON.stringify(Candidatos) %>;
+
+    function atualizarTela() {
+        const etapa = cargos[etapaAtual];
+        document.getElementById("cargo-nome").innerText = etapa.nome.toUpperCase();
+
+        const container = document.querySelector(".tela-numeros");
+        container.innerHTML = "";
+
+        for (let i = 0; i < etapa.digitos; i++) {
+            const div = document.createElement("div");
+            div.classList.add("digito"); // Usa a classe do style.css para o quadrado
+            div.innerText = votoAtual[i] || "";
+            container.appendChild(div);
+        }
+
+        const info = document.getElementById("info-candidato");
+        if (votoAtual.length === etapa.digitos) {
+            const candidato = candidatos.find(c =>
+                c.numero == votoAtual &&
+                c.cargo === etapa.nome &&
+                c.status === "Homologado"
+            );
+
+            if (candidato) {
+                info.innerHTML = `${candidato.nome}<br><span style="font-size: 0.9rem; font-weight: normal;">Partido: ${candidato.partido}</span>`;
+            } else {
+                info.innerText = "VOTO NULO";
+            }
+        } else {
+            info.innerText = "";
+        }
+    }
+
+    function inserirNumero(num) {
+        if (votoAtual.length < cargos[etapaAtual].digitos) {
+            votoAtual += num;
+            atualizarTela();
+        }
+    }
+
+    function corrigirVoto() {
+        votoAtual = "";
+        atualizarTela();
+    }
+
+    function votarBranco() {
+        votoAtual = "";
+        document.getElementById("info-candidato").innerText = "VOTO EM BRANCO";
+    }
+
+    function confirmarVoto() {
+        const etapa = cargos[etapaAtual];
+        const infoTexto = document.getElementById("info-candidato").innerText;
+        
+        if (votoAtual.length !== etapa.digitos && infoTexto !== "VOTO EM BRANCO") {
+            alert("Digite o número completo.");
+            return;
+        }
+
+        votos[etapa.chave] = votoAtual || null;
+        etapaAtual++;
+        votoAtual = "";
+
+        if (etapaAtual < cargos.length) {
+            atualizarTela();
+        } else {
+            enviarVotos();
+        }
+    }
+
+    async function enviarVotos() {
+        try {
+            const response = await fetch("/votar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(votos)
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message);
+            alert("Voto computado com sucesso!");
+            window.location.href = "/resultados";
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+
+    atualizarTela();
+    </script>
+</body>
+</html>
