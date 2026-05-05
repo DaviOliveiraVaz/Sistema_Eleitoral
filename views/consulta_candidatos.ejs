@@ -6,170 +6,63 @@
     <title>Consulta de Candidatos</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+<body>
+    <div class="container">
+        <div class="view active">
+            <header style="text-align: center; margin-bottom: 30px;">
+                <h2>Consulta de Candidatos</h2>
+                <p>Selecione um cargo para filtrar a lista</p>
+            </header>
 
-    <div style="padding: 40px; max-width: 1000px; margin: 0 auto; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px; margin-top: 20px;">
-        
-        <header style="text-align: center; color: #333; margin-bottom: 30px;">
-            <h2>Consulta de Candidatos</h2>
-            <p style="color: #666;">Selecione um cargo para filtrar a lista</p>
-        </header>
-
-        <div style="margin-bottom: 30px;">
-            <label for="filtroCargo" style="font-weight: bold; color: #555;">Filtrar por Cargo:</label>
-            <select id="filtroCargo" style="width: 100%; padding: 12px; border-radius: 4px; border: 1px solid #ddd; margin-top: 8px; font-size: 16px;" onchange="filtrarCandidatos()">
-                <option value="Todos">Todos os Cargos</option>
-                <% for (let cargo in candidatosPorCargo) { %>
-                    <option value="<%= cargo.replace(/\s/g, '') %>"><%= cargo %></option> 
-                <% } %>
-            </select>
-        </div>
-
-        <div id="listaCandidatos">
-            <% for (let cargo in candidatosPorCargo) { %>
-                <% const candidatosDoCargo = candidatosPorCargo[cargo]; %>
-                <% if (candidatosDoCargo.length > 0) { %>
-                    <div class="grupo-cargo" id="grupo-<%= cargo.replace(/\s/g, '') %>">
-                        <h3 style="margin-top: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; color: #0056b3;">
-                            <%= cargo %>
-                        </h3>
-                        <div style="display: grid; gap: 15px; margin-top: 20px;">
-                            <% candidatosDoCargo.forEach((candidato) => { %>
-                                <div style="padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <strong style="font-size: 1.2rem; color: #333;"><%= candidato.nome %></strong><br>
-                                        <span style="color: #666;">Partido: <strong><%= candidato.partido %></strong></span><br>
-                                        <span style="color: #666;">Município: <%= candidato.municipio %></span>
-                                    </div>
-                                    <div style="text-align: right;">
-                                        <span style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;"><%= candidato.numero %></span><br>
-                                        <span style="display: inline-block; padding: 3px 8px; background-color: #2ecc71; color: white; border-radius: 4px; font-size: 0.8rem; margin-top: 5px;"><%= candidato.status %></span>
-                                        
-                                        <!-- Botões apenas para Administrador -->
-                                        <% if (tipoAcesso === 'Administrador') { %>
-                                        <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
-                                            <button 
-                                                onclick="abrirModalEditar('<%= candidato._id %>', '<%= candidato.nome %>', '<%= candidato.partido %>', '<%= candidato.municipio %>', '<%= candidato.numero %>', '<%= candidato.status %>')"
-                                                style="padding: 6px 14px; background-color: #f0a500; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
-                                                ✏️ Editar
-                                            </button>
-                                            <button 
-                                                onclick="abrirModalExcluir('<%= candidato._id %>', '<%= candidato.nome %>')"
-                                                style="padding: 6px 14px; background-color: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
-                                                🗑️ Excluir
-                                            </button>
-                                        </div>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            <% }) %>
-                        </div>
-                    </div>
-                <% } %>
-            <% } %>
-        </div>
-
-        <br><br>
-        <a href="<%= linkHome %>" style="display: inline-block; padding: 10px 20px; background-color: #555; color: white; text-decoration: none; border-radius: 4px;">⬅ Voltar</a>
-    </div>
-
-
-    <!-- ===== MODAL DE EXCLUSÃO ===== -->
-    <div id="modalExcluir" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:8px; max-width:420px; width:90%; text-align:center; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-            <h3 style="color:#e74c3c; margin-bottom:10px;">⚠️ Confirmar Exclusão</h3>
-            <p style="color:#555; margin-bottom:20px;">Tem certeza que deseja excluir o candidato <strong id="nomeExcluir"></strong>? Esta ação não pode ser desfeita.</p>
-            <div style="display:flex; gap:12px; justify-content:center;">
-                <button onclick="fecharModalExcluir()" style="padding:10px 24px; background:#aaa; color:white; border:none; border-radius:4px; cursor:pointer; font-size:1rem;">Cancelar</button>
-                <form id="formExcluir" method="POST" style="margin:0;">
-                    <button type="submit" style="padding:10px 24px; background:#e74c3c; color:white; border:none; border-radius:4px; cursor:pointer; font-size:1rem;">Excluir</button>
-                </form>
+            <div class="form-group">
+                <label for="filtroCargo">Filtrar por Cargo:</label>
+                <select id="filtroCargo" style="width: 100%; padding: 12px; border-radius: 4px;" onchange="filtrarCandidatos()">
+                    <option value="Todos">Todos os Cargos</option>
+                    <% for (let cargo in candidatosPorCargo) { %>
+                        <option value="<%= cargo.replace(/\s/g, '') %>"><%= cargo %></option>
+                    <% } %>
+                </select>
             </div>
+
+            <div id="listaCandidatos">
+                <% for (let cargo in candidatosPorCargo) { %>
+                    <% const candidatosDoCargo = candidatosPorCargo[cargo]; %>
+                    <% if (candidatosDoCargo.length > 0) { %>
+                        <div class="grupo-cargo" id="grupo-<%= cargo.replace(/\s/g, '') %>">
+                            <h3 class="section-title" style="color: #3498db; border-color: #3498db;"><%= cargo %></h3>
+                            <div style="display: grid; gap: 15px; margin-top: 20px;">
+                                <% candidatosDoCargo.forEach((candidato) => { %>
+                                    <div class="instruction-item" style="display: flex; justify-content: space-between; align-items: center; text-align: left;">
+                                        <div>
+                                            <strong style="font-size: 1.2rem;"><%= candidato.nome %></strong><br>
+                                            <span>Partido: <strong><%= candidato.partido %></strong></span><br>
+                                            <span>Município: <%= candidato.municipio %></span>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <span style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;"><%= candidato.numero %></span><br>
+                                            <span class="status-aprovado" style="font-size: 0.8rem;"><%= candidato.status %></span>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                    <% } %>
+                <% } %>
+            </div>
+
+            <br>
+            <a href="<%= linkHome %>" class="btn btn-voltar" style="text-decoration: none;">⬅ Voltar</a>
         </div>
     </div>
-
-
-    <!-- ===== MODAL DE EDIÇÃO ===== -->
-    <div id="modalEditar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:white; padding:30px; border-radius:8px; max-width:500px; width:90%; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-            <h3 style="color:#0056b3; margin-bottom:20px; text-align:center;">✏️ Editar Candidato</h3>
-            <form id="formEditar" method="POST">
-                <div style="margin-bottom:14px;">
-                    <label style="font-weight:bold; color:#555; display:block; margin-bottom:4px;">Nome</label>
-                    <input type="text" id="editNome" name="nome" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:1rem; box-sizing:border-box;">
-                </div>
-                <div style="margin-bottom:14px;">
-                    <label style="font-weight:bold; color:#555; display:block; margin-bottom:4px;">Partido</label>
-                    <input type="text" id="editPartido" name="partido" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:1rem; box-sizing:border-box;">
-                </div>
-                <div style="margin-bottom:14px;">
-                    <label style="font-weight:bold; color:#555; display:block; margin-bottom:4px;">Município</label>
-                    <input type="text" id="editMunicipio" name="municipio" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:1rem; box-sizing:border-box;">
-                </div>
-                <div style="margin-bottom:14px;">
-                    <label style="font-weight:bold; color:#555; display:block; margin-bottom:4px;">Número</label>
-                    <input type="text" id="editNumero" name="numero" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:1rem; box-sizing:border-box;">
-                </div>
-                <div style="margin-bottom:20px;">
-                    <label style="font-weight:bold; color:#555; display:block; margin-bottom:4px;">Status</label>
-                    <select id="editStatus" name="status" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:1rem; box-sizing:border-box;">
-                        <option value="Homologado">Homologado</option>
-                        <option value="Pendente">Pendente</option>
-                        <option value="Rejeitado">Rejeitado</option>
-                    </select>
-                </div>
-                <div style="display:flex; gap:12px; justify-content:flex-end;">
-                    <button type="button" onclick="fecharModalEditar()" style="padding:10px 24px; background:#aaa; color:white; border:none; border-radius:4px; cursor:pointer; font-size:1rem;">Cancelar</button>
-                    <button type="submit" style="padding:10px 24px; background:#0056b3; color:white; border:none; border-radius:4px; cursor:pointer; font-size:1rem;">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
 
     <script>
         function filtrarCandidatos() {
             const valorSelecionado = document.getElementById('filtroCargo').value;
             const grupos = document.querySelectorAll('.grupo-cargo');
             grupos.forEach(grupo => {
-                if (valorSelecionado === 'Todos') {
-                    grupo.style.display = 'block';
-                } else {
-                    grupo.style.display = (grupo.id === 'grupo-' + valorSelecionado) ? 'block' : 'none';
-                }
+                grupo.style.display = (valorSelecionado === 'Todos' || grupo.id === 'grupo-' + valorSelecionado) ? 'block' : 'none';
             });
         }
-
-        function abrirModalExcluir(id, nome) {
-            document.getElementById('nomeExcluir').textContent = nome;
-            document.getElementById('formExcluir').action = '/candidatos/' + id + '/excluir';
-            document.getElementById('modalExcluir').style.display = 'flex';
-        }
-
-        function fecharModalExcluir() {
-            document.getElementById('modalExcluir').style.display = 'none';
-        }
-
-        function abrirModalEditar(id, nome, partido, municipio, numero, status) {
-            document.getElementById('editNome').value = nome;
-            document.getElementById('editPartido').value = partido;
-            document.getElementById('editMunicipio').value = municipio;
-            document.getElementById('editNumero').value = numero;
-            document.getElementById('editStatus').value = status;
-            document.getElementById('formEditar').action = '/candidatos/' + id + '/editar';
-            document.getElementById('modalEditar').style.display = 'flex';
-        }
-
-        function fecharModalEditar() {
-            document.getElementById('modalEditar').style.display = 'none';
-        }
-
-        window.addEventListener('click', function(e) {
-            const modalExcluir = document.getElementById('modalExcluir');
-            const modalEditar  = document.getElementById('modalEditar');
-            if (e.target === modalExcluir) fecharModalExcluir();
-            if (e.target === modalEditar)  fecharModalEditar();
-        });
     </script>
 </body>
 </html>

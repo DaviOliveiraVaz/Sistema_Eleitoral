@@ -32,7 +32,7 @@
                     <div style="display: flex; gap: 15px;">
                         <div class="form-group" style="flex: 1;">
                             <label>CPF (Apenas Leitura)</label>
-                            <input type="text" value="<%= usuario.cpf %>" disabled style="background: #eee;">
+                            <input type="text" value="<%= usuario.cpf %>" disabled style="background-color: #eee;">
                         </div>
                         <div class="form-group" style="flex: 1;">
                             <label>Idade</label>
@@ -50,15 +50,15 @@
                         <input type="text" name="naturalidade" value="<%= usuario.naturalidade %>">
                     </div>
 
-                    <div class="form-group" style="margin-top: 20px;">
+                    <div class="form-group">
                         <label>Situação do Voto</label>
                         <div style="margin-top: 5px;">
                             <% if (usuario.votou) { %>
-                                <span style="display: inline-block; padding: 6px 12px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
+                                <span class="status-aprovado" style="background-color: #d4edda; padding: 6px 12px; border-radius: 4px;">
                                     ● Voto Confirmado
                                 </span>
                             <% } else { %>
-                                <span style="display: inline-block; padding: 6px 12px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
+                                <span class="status-rejeitado" style="background-color: #f8d7da; padding: 6px 12px; border-radius: 4px;">
                                     ○ Ainda não votou
                                 </span>
                             <% } %>
@@ -66,15 +66,15 @@
                     </div>
 
                     <% if (tipoAcesso === 'Candidato' && usuario.cargo) { %>
-                        <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; border: 1px solid #d0e7ff; margin-bottom: 20px; margin-top: 20px;">
-                            <h4 style="color: #0056b3; margin-bottom: 10px;">Dados da Candidatura</h4>
+                        <div class="instruction-item" style="text-align: left; margin-bottom: 20px; background-color: #f0f7ff;">
+                            <h4 style="color: #3498db;">Dados da Candidatura</h4>
                             <p><strong>Cargo:</strong> <%= usuario.cargo %></p>
                             <p><strong>Número:</strong> <%= usuario.numero %></p>
                             <p><strong>Status:</strong> <%= usuario.status %></p>
                         </div>
                     <% } %>
 
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; margin-top: 20px;">Salvar Alterações</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Salvar Alterações</button>
                 </form>
             </div>
         </main>

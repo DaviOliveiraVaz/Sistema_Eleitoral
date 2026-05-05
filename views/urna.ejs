@@ -8,23 +8,21 @@
 </head>
 <body class="urna-page">
 
-    <div id="urna" class="view active">
-        <h2>Votação</h2>
-
-        <div class="container">
+    <div id="urna" class="container">
         <div class="urna-container">
+            <!-- TELA DA URNA -->
             <div class="urna-tela">
                 <div>
                     <div class="tela-header">
-                        Seu voto para<br><br>GOVERNADOR
+                        Seu voto para<br><br><span id="cargo-nome">DEPUTADO ESTADUAL</span>
                     </div>
 
+                    <!-- AREA DOS NUMEROS: onde os dígitos aparecem -->
                     <div class="tela-numeros">
-                        <div class="digito" id="digito1"></div>
-                        <div class="digito" id="digito2"></div>
+                        <!-- Os elementos .digito serão gerados aqui pelo JavaScript -->
                     </div>
 
-                    <div id="info-candidato" style="font-size: 1.2rem; font-weight: bold; min-height: 60px;"></div>
+                    <div id="info-candidato" style="min-height: 80px; margin-top: 20px; font-weight: bold;"></div>
                 </div>
 
                 <div class="tela-rodape">
@@ -34,6 +32,7 @@
                 </div>
             </div>
 
+            <!-- TECLADO DA URNA -->
             <div class="urna-teclado">
                 <div class="teclado-numeros">
                     <button class="tecla" onclick="inserirNumero(1)">1</button>
@@ -57,14 +56,13 @@
                 </div>
             </div>
         </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="<%= linkHome %>" class="btn-voltar" style="text-decoration: none; display: inline-block;">← Voltar</a>
         </div>
-
-        <br>
-        <a href="<%= linkHome %>">← Voltar</a>
     </div>
 
     <script>
-
     const cargos = [
         { nome: "Deputado Estadual", chave: "deputadoEstadual", digitos: 5 },
         { nome: "Deputado Federal", chave: "deputadoFederal", digitos: 4 },
@@ -76,30 +74,24 @@
     let etapaAtual = 0;
     let votoAtual = "";
     let votos = {};
-
     const candidatos = <%- JSON.stringify(Candidatos) %>;
 
     function atualizarTela() {
         const etapa = cargos[etapaAtual];
-
-        document.querySelector(".tela-header").innerHTML =
-            `Seu voto para<br><br>${etapa.nome.toUpperCase()}`;
+        document.getElementById("cargo-nome").innerText = etapa.nome.toUpperCase();
 
         const container = document.querySelector(".tela-numeros");
         container.innerHTML = "";
 
         for (let i = 0; i < etapa.digitos; i++) {
             const div = document.createElement("div");
-            div.classList.add("digito");
+            div.classList.add("digito"); // Usa a classe do style.css para o quadrado
             div.innerText = votoAtual[i] || "";
             container.appendChild(div);
         }
 
         const info = document.getElementById("info-candidato");
-
         if (votoAtual.length === etapa.digitos) {
-            
-            // BUSCA CORRIGIDA:
             const candidato = candidatos.find(c =>
                 c.numero == votoAtual &&
                 c.cargo === etapa.nome &&
@@ -117,9 +109,7 @@
     }
 
     function inserirNumero(num) {
-        const etapa = cargos[etapaAtual];
-
-        if (votoAtual.length < etapa.digitos) {
+        if (votoAtual.length < cargos[etapaAtual].digitos) {
             votoAtual += num;
             atualizarTela();
         }
@@ -137,18 +127,14 @@
 
     function confirmarVoto() {
         const etapa = cargos[etapaAtual];
-
-        if (
-            votoAtual.length !== etapa.digitos &&
-            document.getElementById("info-candidato").innerText !== "VOTO EM BRANCO"
-        ) {
+        const infoTexto = document.getElementById("info-candidato").innerText;
+        
+        if (votoAtual.length !== etapa.digitos && infoTexto !== "VOTO EM BRANCO") {
             alert("Digite o número completo.");
             return;
         }
 
         votos[etapa.chave] = votoAtual || null;
-
-        // próxima etapa
         etapaAtual++;
         votoAtual = "";
 
@@ -163,27 +149,19 @@
         try {
             const response = await fetch("/votar", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(votos)
             });
-
             const data = await response.json();
-
             if (!response.ok) throw new Error(data.message);
-
             alert("Voto computado com sucesso!");
             window.location.href = "/resultados";
-
         } catch (err) {
             alert(err.message);
         }
     }
 
     atualizarTela();
-    
-</script>
-
+    </script>
 </body>
 </html>

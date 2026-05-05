@@ -12,14 +12,14 @@
             <h1>Cadastro de Candidato</h1>
             <p>Insira seus dados completos para realizar o seu cadastro</p>
         </header>
-        <div style="padding: 30px;">
+        <div class="home-content">
             <form action="/cadastro_candidato" method="POST">
                 <div class="form-group">
                     <label>Nome Completo</label>
                     <input type="text" name="nome" placeholder="Seu nome" required>
                 </div>
                 
-                <div style="display: flex; gap: 15px;">
+                <div class="instructions-container">
                     <div class="form-group" style="flex: 1;">
                         <label>CPF</label> 
                         <input type="text" name="cpf" placeholder="000.000.000-00" maxlength="11" required>
@@ -45,7 +45,7 @@
                     <input type="password" name="senha" placeholder="Senha">
                 </div>
                 
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px; padding: 15px;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px;">
                     Finalizar Cadastro de Candidatura
                 </button>
             </form>
@@ -54,40 +54,5 @@
             <button class="btn btn-voltar" onclick="window.location.href='/cadastro'">⬅ Voltar</button>
         </footer>
     </div>
-
-    <script>
-        const regrasCargos = {
-            "Presidente": { digitos: 2, placeholder: "Ex: 12" },
-            "Governador": { digitos: 2, placeholder: "Ex: 45" },
-            "Senador": { digitos: 3, placeholder: "Ex: 123" },
-            "Deputado Federal": { digitos: 4, placeholder: "Ex: 1234" },
-            "Deputado Estadual": { digitos: 5, placeholder: "Ex: 12345" }
-        };
-
-        const selectCargo = document.getElementById("select-cargo");
-        const inputNumero = document.getElementById("input-numero");
-
-        function atualizarValidacao() {
-            const cargoSelecionado = selectCargo.value;
-            const regra = regrasCargos[cargoSelecionado];
-
-            if (regra) {
-                const minimo = Math.pow(10, regra.digitos - 1);
-                const maximo = Math.pow(10, regra.digitos) - 1;
-
-                inputNumero.min = minimo;
-                inputNumero.max = maximo;
-                inputNumero.placeholder = regra.placeholder;
-
-                if (inputNumero.value && inputNumero.value.length !== regra.digitos) {
-                    inputNumero.value = "";
-                }
-            }
-        }
-
-        selectCargo.addEventListener("change", atualizarValidacao);
-
-        atualizarValidacao();
-    </script>
 </body>
 </html>
