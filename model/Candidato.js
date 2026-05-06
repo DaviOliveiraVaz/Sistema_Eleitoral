@@ -21,6 +21,7 @@ const CandidatoSchema = new Schema({
     enum: ["Pendente", "Homologado", "Rejeitado"],
     default: "Pendente"
   },
+  votou: { type: Boolean, default: false },
   senha: { type: String, required: true }
 });
 

@@ -143,39 +143,53 @@ app.get("/sair", (req, res) => {
 });
 
 app.get("/urna", async function (req, res) {
-      try {
-          const idUsuario = req.session.id_usuario;
-          const tipoAcesso = req.session.tipoAcesso;
-          const eleitor = await Eleitor.findById(idUsuario);
+    try {
+        const idUsuario = req.session.id_usuario;
+        const tipoAcesso = req.session.tipoAcesso;
 
-          if (!idUsuario) {
-              return res.status(401).send(
-                  `<script>alert("Acesso negado. Você precisa estar logado."); window.location.href="/login";</script>`
-              );
-          } 
+        if (!idUsuario) {
+            return res.status(401).send(
+                `<script>alert("Acesso negado. Você precisa estar logado."); window.location.href="/login";</script>`
+            );
+        }
 
-          if (tipoAcesso === 'Administrador') {
-              return res.status(403).send(
-                  `<script>alert("Administradores não têm acesso à urna de votação."); window.history.back();</script>`
-              );
-          }
+        if (tipoAcesso === 'Administrador') {
+            return res.status(403).send(
+                `<script>alert("Administradores não têm acesso à urna de votação."); window.history.back();</script>`
+            );
+        }
 
-          if (eleitor.votou) {
+        let ModeloVotante;
+        if (tipoAcesso === 'Eleitor') {
+            ModeloVotante = Eleitor;
+        } else if (tipoAcesso === 'Candidato') {
+            ModeloVotante = Candidato;
+        }
+
+        const usuarioVotante = await ModeloVotante.findById(idUsuario);
+
+        if (!usuarioVotante) {
+            return res.status(404).send(
+                `<script>alert("Usuário não encontrado."); window.location.href="/login";</script>`
+            );
+        }
+
+        if (usuarioVotante.votou) {
             return res.send(`
                 <script>
                     alert("Você já votou.");
                     window.location.href = "${res.locals.linkHome}";
                 </script>
             `);
-          }
+        }
 
-          const docs = await Candidato.find({});
-          res.render("urna.ejs", { Candidatos: docs });
+        const docs = await Candidato.find({ status: "Homologado" });
+        res.render("urna.ejs", { Candidatos: docs });
 
-      } catch (error) {
-          console.error("Erro: ", error);
-          res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
-      }
+    } catch (error) {
+        console.error("Erro: ", error);
+        res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
+    }
 });
 
 app.post("/votar", async (req, res) => {
@@ -191,13 +205,20 @@ app.post("/votar", async (req, res) => {
             return res.status(403).json({ message: "Administradores não votam." });
         }
 
-        const eleitor = await Eleitor.findById(idUsuario);
-
-        if (!eleitor) {
-            return res.status(403).json({ message: "Apenas eleitores cadastrados podem registrar votos." });
+        let ModeloVotante;
+        if (tipoAcesso === 'Eleitor') {
+            ModeloVotante = Eleitor;
+        } else if (tipoAcesso === 'Candidato') {
+            ModeloVotante = Candidato;
         }
 
-        if (eleitor.votou) {
+        const usuarioVotante = await ModeloVotante.findById(idUsuario);
+
+        if (!usuarioVotante) {
+            return res.status(404).json({ message: "Usuário não encontrado no sistema." });
+        }
+
+        if (usuarioVotante.votou) {
             return res.status(400).json({ message: "Você já votou." });
         }
 
@@ -230,8 +251,8 @@ app.post("/votar", async (req, res) => {
             }
         }
 
-        eleitor.votou = true;
-        await eleitor.save();
+        usuarioVotante.votou = true;
+        await usuarioVotante.save();
 
         res.json({ message: "Voto registrado com sucesso!" });
 
