@@ -239,7 +239,6 @@ app.post("/votar", async (req, res) => {
         };
 
         await Voto.create({
-            eleitorId: idUsuario,
             votos: voto
         });
 
