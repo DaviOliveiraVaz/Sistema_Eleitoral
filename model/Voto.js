@@ -1,11 +1,7 @@
 const { Schema, model } = require("mongoose");
 
 const VotoSchema = new Schema({
-  eleitorId: { 
-    type: Schema.Types.ObjectId, 
-    ref: "Eleitor", 
-    required: true 
-  },
+//removi o EleitorID daqui
 
   votos: {
     presidente: { type: Schema.Types.ObjectId, ref: "Candidato" },
