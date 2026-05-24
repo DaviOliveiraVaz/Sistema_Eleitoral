@@ -1,0 +1,30 @@
+<nav class="navbar">
+    <a href="<%= linkHome %>" class="navbar-brand">🗳️ Sistema Eleitoral</a>
+
+    <div class="navbar-links">
+        <% if (tipoAcesso) { %>
+
+            <a href="/lista_candidatos" class="navbar-link">👥 Candidatos</a>
+            <a href="/resultados" class="navbar-link">📊 Apuração</a>
+
+            <% if (tipoAcesso === 'Eleitor' || tipoAcesso === 'Candidato') { %>
+                <a href="/urna" class="navbar-link">🗳️ Votar</a>
+            <% } %>
+
+            <% if (tipoAcesso === 'Candidato') { %>
+                <a href="/minha_candidatura" class="navbar-link">🏛️ Minha Campanha</a>
+            <% } %>
+
+            <% if (tipoAcesso === 'Administrador') { %>
+                <a href="/admin" class="navbar-link">✅ Homologação</a>
+                <a href="/consulta_candidatos" class="navbar-link">🔍 Gerenciar</a>
+            <% } %>
+
+            <a href="/perfil" class="navbar-link">👤 Perfil</a>
+            <a href="/sair" class="navbar-link navbar-sair">🚪 Sair</a>
+
+        <% } else { %>
+            <a href="/login" class="navbar-link">🔑 Login</a>
+        <% } %>
+    </div>
+</nav>

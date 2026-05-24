@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <%- include('navbar') %>
+
     <div class="container">
         <div class="view active">
             <h2>Resultados Parciais</h2>
@@ -36,9 +38,6 @@
                     </div>
                 <% } %>
             <% } %>
-
-            <br>
-            <a href="<%= linkHome %>" class="btn btn-primary" style="text-decoration: none;">← Voltar</a>
         </div>
     </div>
 

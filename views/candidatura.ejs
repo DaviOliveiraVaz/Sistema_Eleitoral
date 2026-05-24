@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <%- include('navbar') %>
+
     <div class="container">
         <div class="view active">
             <h2>Central do Candidato</h2>
@@ -78,9 +80,6 @@
                     </button>
                 </form>
             <% } %>
-
-            <br>
-            <a href="<%= linkHome %>" class="btn-voltar" style="text-decoration: none;">← Voltar para a Home</a>
         </div>
     </div>
 

@@ -6,22 +6,33 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="main-layout">
-        <nav class="sidebar">
-            <h2>Portal Candidato</h2>
-            <ul class="sidebar-menu">
-                <li><a href="/perfil">Meus Dados</a></li>
-                <li><a href="/minha_candidatura">Minha Candidatura</a></li>
-                <li><a href="/consulta_candidatos">Lista de Candidatos</a></li>
-                <li><a href="/urna">Votar</a></li>
-                <li><a href="/resultados">Apuração dos Votos</a></li>
-                <li><a href="/sair" class="status-rejeitado">Sair</a></li>
-            </ul>
-        </nav>
-        <main class="content-area">
-            <h1>Painel do Candidato</h1>
-            <p>Acompanhe seu registro e os dados do pleito eleitoral.</p>
-        </main>
-    </div>
+    <%- include('navbar') %>
+    <main class="content-area">
+        <h1>Painel do Candidato</h1>
+        <p>Acompanhe seu registro e os dados do pleito eleitoral.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; max-width: 700px;">
+            <a href="/minha_candidatura" class="login-card" style="text-decoration:none;">
+                <div class="card-icon">🏛️</div>
+                <h3>Minha Candidatura</h3>
+                <p>Acompanhe o status da sua candidatura</p>
+            </a>
+            <a href="/urna" class="login-card" style="text-decoration:none;">
+                <div class="card-icon">🗳️</div>
+                <h3>Votar</h3>
+                <p>Registrar seu voto nas eleições</p>
+            </a>
+            <a href="/lista_candidatos" class="login-card" style="text-decoration:none;">
+                <div class="card-icon">👥</div>
+                <h3>Candidatos</h3>
+                <p>Ver lista de candidatos homologados</p>
+            </a>
+            <a href="/resultados" class="login-card" style="text-decoration:none;">
+                <div class="card-icon">📊</div>
+                <h3>Apuração</h3>
+                <p>Acompanhar resultados da eleição</p>
+            </a>
+        </div>
+    </main>
 </body>
 </html>

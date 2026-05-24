@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <%- include('navbar') %>
+
     <div id="admin" class="container">
         <h2>Painel Administrativo</h2>
 
@@ -99,9 +101,6 @@
                 <% } %>
             </tbody>
         </table>
-
-        <br><br>
-        <a href="<%= linkHome %>" class="btn-voltar" style="text-decoration: none;">← Voltar para Home</a>
     </div>
 
     <script>
