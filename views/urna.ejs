@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="urna-page">
+    <%- include('navbar') %>
 
     <div id="urna" class="container">
         <div class="urna-container">
@@ -17,7 +18,6 @@
                         Seu voto para<br><br><span id="cargo-nome">DEPUTADO ESTADUAL</span>
                     </div>
 
-                    <!-- AREA DOS NUMEROS: onde os dígitos aparecem -->
                     <div class="tela-numeros">
                         <!-- Os elementos .digito serão gerados aqui pelo JavaScript -->
                     </div>
@@ -56,10 +56,6 @@
                 </div>
             </div>
         </div>
-        
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="<%= linkHome %>" class="btn-voltar" style="text-decoration: none; display: inline-block;">← Voltar</a>
-        </div>
     </div>
 
     <script>
@@ -85,7 +81,7 @@
 
         for (let i = 0; i < etapa.digitos; i++) {
             const div = document.createElement("div");
-            div.classList.add("digito"); // Usa a classe do style.css para o quadrado
+            div.classList.add("digito");
             div.innerText = votoAtual[i] || "";
             container.appendChild(div);
         }

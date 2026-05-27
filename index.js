@@ -400,7 +400,7 @@ app.get("/home_candidato", (req, res) => res.render("home_candidato.ejs"));
 
 app.get("/home_adm", (req, res) => res.render("home_adm.ejs"));
 
-app.get("/consulta_candidatos", async (req, res) => {
+app.get("/lista_candidatos", async (req, res) => {
     try {
         const candidatos = await Candidato.find({ status: "Homologado" }).sort({ nome: 1 });
 
@@ -412,7 +412,7 @@ app.get("/consulta_candidatos", async (req, res) => {
             candidatosPorCargo[candidato.cargo].push(candidato);
         });
 
-        res.render("consulta_candidatos.ejs", { candidatosPorCargo });
+        res.render("lista_candidatos.ejs", { candidatosPorCargo });
 
     } catch (error) {
         console.error("Erro ao carregar candidatos:", error);
