@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolha o tipo de Cadastro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+    <div class="login-wrapper">
+        <header class="login-header">
+            <h1>Tipo de Cadastro</h1>
+            <p>Selecione sua função no sistema eleitoral</p>
+        </header>
+        
+        <div class="login-options">
+            <a href="/cadastro_eleitor" class="login-card">
+                <div class="card-icon">🗳️</div>
+                <h3>Eleitor</h3>
+                <p>Cadastrar para votar nas eleições</p>
+            </a>
+
+            <a href="/cadastro_candidato" class="login-card">
+                <div class="card-icon">📢</div>
+                <h3>Candidato</h3>
+                <p>Cadastrar para concorrer a um cargo</p>
+            </a>
+        </div>
+
+        <footer class="login-footer">
+            <button class="btn btn-voltar" onclick="window.location.href='/login'">⬅ Voltar para o Login</button>
+        </footer>
+    </div>
+</body>
+</html>

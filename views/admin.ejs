@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="admin" class="container">
+        <h2>Painel Administrativo</h2>
+
+        <% 
+            let totalRecebidos = Candidatos.length;
+            let totalAprovados = Candidatos.filter(c => c.status === 'Homologado').length;
+            let totalRejeitados = Candidatos.filter(c => c.status === 'Rejeitado').length;
+            let totalPendentes = Candidatos.filter(c => c.status === 'Pendente').length;
+        %>
+        <div class="stats-container" style="display: flex; gap: 20px; margin-bottom: 30px;">
+            <div class="stat-card">
+                <h4>Total Recebidos</h4>
+                <p><%= totalRecebidos %></p>
+            </div>
+            <div class="stat-card">
+                <h4>Pendentes</h4>
+                <p class="status-pendente"><%= totalPendentes %></p>
+            </div>
+            <div class="stat-card">
+                <h4>Aprovados</h4>
+                <p class="status-aprovado"><%= totalAprovados %></p>
+            </div>
+            <div class="stat-card">
+                <h4>Rejeitados</h4>
+                <p class="status-rejeitado"><%= totalRejeitados %></p>
+            </div>
+        </div>
+
+        <h3 class="section-title">Aguardando Homologação</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Candidato</th>
+                    <th>Número</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let temPendente = false; %>
+                <% Candidatos.forEach(function(candidato) { %>
+                    <% if (candidato.status === 'Pendente') { %>
+                        <% temPendente = true; %>
+                        <tr id="linha-<%= candidato._id %>">
+                            <td><%= candidato.nome %></td>
+                            <td><%= candidato.numero %></td>
+                            <td><span class="status-pendente">Pendente</span></td>
+                            <td>
+                                <button onclick="mudarStatus('<%= candidato._id %>', 'Homologado')" class="btn btn-primary" style="background-color: #2ecc71;">Aprovar</button>
+                                <button onclick="mudarStatus('<%= candidato._id %>', 'Rejeitado')" class="btn btn-primary" style="background-color: #e74c3c;">Rejeitar</button>
+                            </td>
+                        </tr>
+                    <% } %>
+                <% }) %>
+                <% if (!temPendente) { %>
+                    <tr><td colspan="4" style="text-align: center; color: #999;">Nenhuma candidatura pendente no momento.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+
+        <h3 class="section-title">Histórico de Decisões</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Candidato</th>
+                    <th>Número</th>
+                    <th>Cargo</th>
+                    <th>Status Final</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let temHistorico = false; %>
+                <% Candidatos.forEach(function(candidato) { %>
+                    <% if (candidato.status !== 'Pendente') { %>
+                        <% temHistorico = true; %>
+                        <tr>
+                            <td><%= candidato.nome %></td>
+                            <td><%= candidato.numero %></td>
+                            <td><%= candidato.cargo %></td>
+                            <td>
+                                <span class="<%= candidato.status === 'Homologado' ? 'status-aprovado' : 'status-rejeitado' %>">
+                                    <%= candidato.status %>
+                                </span>
+                            </td>
+                        </tr>
+                    <% } %>
+                <% }) %>
+                <% if (!temHistorico) { %>
+                    <tr><td colspan="4" style="text-align: center; color: #999;">O histórico aparecerá aqui após as primeiras homologações.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+
+        <br><br>
+        <a href="<%= linkHome %>" class="btn-voltar" style="text-decoration: none;">← Voltar para Home</a>
+    </div>
+
+    <script>
+        async function mudarStatus(candidatoId, novoStatus) {
+            const acao = novoStatus === 'Homologado' ? 'aprovar' : 'rejeitar';
+            if (!confirm(`Tem certeza que deseja ${acao} este candidato?`)) return;
+
+            try {
+                const response = await fetch('/admin/homologar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ candidatoId, novoStatus })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert("Erro: " + data.message);
+                }
+            } catch (error) {
+                console.error("Erro na requisição:", error);
+                alert("Ocorreu um erro ao processar a solicitação.");
+            }
+        }
+    </script>
+</body>
+</html>
