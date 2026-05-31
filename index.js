@@ -5,8 +5,11 @@ const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const conexao = require("./config/database");
+<<<<<<< HEAD
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+=======
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
 require('dotenv').config();
 const Eleitor = require("./model/Eleitor");
 const Candidato = require("./model/Candidato");
@@ -69,7 +72,11 @@ app.get("/login", function (req, res) {
 });
 
 app.post('/login', async (req, res) => {
+<<<<<<< HEAD
   const { tipoLogin, cpf, senha } = req.body;
+=======
+  const { tipoLogin, cpf } = req.body;
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
 
   try {
     let ModeloUsuario;
@@ -98,6 +105,7 @@ app.post('/login', async (req, res) => {
       );
     }
 
+<<<<<<< HEAD
     const match = await bcrypt.compare(senha, usuario.senha);
 
     if (match) {
@@ -120,6 +128,23 @@ app.post('/login', async (req, res) => {
         `<script>alert("CPF ou senha incorretos."); window.history.back();</script>`
       );
     }
+=======
+    req.session.id_usuario = usuario._id;
+    req.session.cpf = usuario.cpf;
+    req.session.tipoAcesso = tipoLogin;
+    
+    switch (tipoLogin) {
+      case 'Eleitor':
+        return res.redirect("/home_eleitor");
+      case 'Candidato':
+        return res.redirect("/home_candidato");
+      case 'Administrador':
+        return res.redirect("/home_adm");
+      default:
+        return res.redirect("/"); 
+    }
+
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
   } catch (error) {
     console.error(`Erro ao consultar o banco de dados (${tipoLogin}): `, error);
     return res.status(500).send(
@@ -143,6 +168,7 @@ app.get("/sair", (req, res) => {
 });
 
 app.get("/urna", async function (req, res) {
+<<<<<<< HEAD
     try {
         const idUsuario = req.session.id_usuario;
         const tipoAcesso = req.session.tipoAcesso;
@@ -175,12 +201,33 @@ app.get("/urna", async function (req, res) {
         }
 
         if (usuarioVotante.votou) {
+=======
+      try {
+          const idUsuario = req.session.id_usuario;
+          const tipoAcesso = req.session.tipoAcesso;
+          const eleitor = await Eleitor.findById(idUsuario);
+
+          if (!idUsuario) {
+              return res.status(401).send(
+                  `<script>alert("Acesso negado. Você precisa estar logado."); window.location.href="/login";</script>`
+              );
+          } 
+
+          if (tipoAcesso === 'Administrador') {
+              return res.status(403).send(
+                  `<script>alert("Administradores não têm acesso à urna de votação."); window.history.back();</script>`
+              );
+          }
+
+          if (eleitor.votou) {
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
             return res.send(`
                 <script>
                     alert("Você já votou.");
                     window.location.href = "${res.locals.linkHome}";
                 </script>
             `);
+<<<<<<< HEAD
         }
 
         const docs = await Candidato.find({ status: "Homologado" });
@@ -190,6 +237,17 @@ app.get("/urna", async function (req, res) {
         console.error("Erro: ", error);
         res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
     }
+=======
+          }
+
+          const docs = await Candidato.find({});
+          res.render("urna.ejs", { Candidatos: docs });
+
+      } catch (error) {
+          console.error("Erro: ", error);
+          res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
+      }
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
 });
 
 app.post("/votar", async (req, res) => {
@@ -205,6 +263,7 @@ app.post("/votar", async (req, res) => {
             return res.status(403).json({ message: "Administradores não votam." });
         }
 
+<<<<<<< HEAD
         let ModeloVotante;
         if (tipoAcesso === 'Eleitor') {
             ModeloVotante = Eleitor;
@@ -219,6 +278,15 @@ app.post("/votar", async (req, res) => {
         }
 
         if (usuarioVotante.votou) {
+=======
+        const eleitor = await Eleitor.findById(idUsuario);
+
+        if (!eleitor) {
+            return res.status(403).json({ message: "Apenas eleitores cadastrados podem registrar votos." });
+        }
+
+        if (eleitor.votou) {
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
             return res.status(400).json({ message: "Você já votou." });
         }
 
@@ -239,6 +307,10 @@ app.post("/votar", async (req, res) => {
         };
 
         await Voto.create({
+<<<<<<< HEAD
+=======
+            eleitorId: idUsuario,
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
             votos: voto
         });
 
@@ -250,8 +322,13 @@ app.post("/votar", async (req, res) => {
             }
         }
 
+<<<<<<< HEAD
         usuarioVotante.votou = true;
         await usuarioVotante.save();
+=======
+        eleitor.votou = true;
+        await eleitor.save();
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
 
         res.json({ message: "Voto registrado com sucesso!" });
 
@@ -331,7 +408,11 @@ app.get("/cadastro_eleitor", function (req, res) {
 
 app.post("/cadastro_eleitor", async (req, res) => {
     try {
+<<<<<<< HEAD
         const { nome, cpf, dataNascimento, estado, cidade, senha } = req.body;
+=======
+        const { nome, cpf, municipio, idade, naturalidade } = req.body;
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
 
         const eleitorExistente = await Eleitor.findOne({ cpf: cpf });
         
@@ -344,6 +425,7 @@ app.post("/cadastro_eleitor", async (req, res) => {
             `);
         }
 
+<<<<<<< HEAD
         const hash = await bcrypt.hash(req.body.senha, saltRounds);
 
         const novoEleitor = new Eleitor({
@@ -354,6 +436,15 @@ app.post("/cadastro_eleitor", async (req, res) => {
     cidade,
     senha: hash
 });
+=======
+        const novoEleitor = new Eleitor({
+            nome,
+            cpf,
+            municipio,
+            idade: Number(idade),
+            naturalidade
+        });
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
 
         await novoEleitor.save();
 
@@ -375,6 +466,7 @@ app.get("/cadastro_candidato", function (req, res) {
 
 app.post("/cadastro_candidato", async (req, res) => {
     try {
+<<<<<<< HEAD
         const { nome, cpf, dataNascimento, estado, cidade, senha } = req.body;
         const existente = await Candidato.findOne({ $or: [{ cpf }] });
         if (existente) {
@@ -393,6 +485,19 @@ app.post("/cadastro_candidato", async (req, res) => {
 });
         await novoCandidato.save();
         res.send("<script>alert('Cadastro concluído! Faça login no portal para lançar sua candidatura.'); window.location.href = '/login';</script>");
+=======
+        const { nome, cpf, numero, cargo, partido, municipio, idade, naturalidade } = req.body;
+        const existente = await Candidato.findOne({ $or: [{ cpf }, { numero }] });
+        if (existente) {
+            return res.send("<script>alert('CPF ou Número já cadastrado!'); window.history.back();</script>");
+        }
+        const novoCandidato = new Candidato({
+            nome, cpf, numero: Number(numero), cargo, partido, municipio, 
+            idade: Number(idade), naturalidade, status: "Pendente"
+        });
+        await novoCandidato.save();
+        res.send("<script>alert('Candidatura enviada! Aguarde homologação.'); window.location.href = '/login';</script>");
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
     } catch (error) {
         res.status(500).send("Erro ao cadastrar candidato.");
     }
@@ -424,6 +529,7 @@ app.get("/consulta_candidatos", async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 app.get("/minha_candidatura", async (req, res) => {
     try {
         const idUsuario = req.session.id_usuario;
@@ -527,6 +633,8 @@ app.post("/perfil/editar", async (req, res) => {
     }
 });
 
+=======
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
 app.listen("3000", function () {
   console.log("Servidor rodando na porta 3000!");
 });

@@ -10,15 +10,22 @@
     <div class="login-wrapper">
         <header class="login-header">
             <h1>Cadastro de Candidato</h1>
+<<<<<<< HEAD
             <p>Insira seus dados completos para realizar o seu cadastro</p>
         </header>
         <div class="home-content">
+=======
+            <p>Insira seus dados completos para lançar a sua candidatura</p>
+        </header>
+        <div style="padding: 30px;">
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
             <form action="/cadastro_candidato" method="POST">
                 <div class="form-group">
                     <label>Nome Completo</label>
                     <input type="text" name="nome" placeholder="Seu nome" required>
                 </div>
                 
+<<<<<<< HEAD
                 <div class="instructions-container">
     <div class="form-group" style="flex: 1;">
         <label>CPF</label> 
@@ -51,6 +58,54 @@
                 </div>
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px;">
+=======
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>CPF</label> 
+                        <input type="text" name="cpf" placeholder="000.000.000-00" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Idade</label>
+                        <input type="number" name="idade" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Município</label>
+                    <input type="text" name="municipio" placeholder="Cidade onde vota e concorre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Naturalidade</label>
+                    <input type="text" name="naturalidade" placeholder="Cidade/UF">
+                </div>
+                
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Número de Campanha</label>
+                        <input type="number" id="input-numero" name="numero" placeholder="Ex: 12" required>
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label>Partido (Sigla)</label>
+                        <input type="text" name="partido" placeholder="Ex: PTADS" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Cargo Pretendido</label>
+                    <select id="select-cargo" name="cargo" required style="width: 100%; padding: 12px; border-radius: 5px; border: 1px solid #ddd; background: white;">
+                        <option value="Presidente">Presidente</option>
+                        <option value="Governador">Governador</option>
+                        <option value="Senador">Senador</option>
+                        <option value="Deputado Federal">Deputado Federal</option>
+                        <option value="Deputado Estadual">Deputado Estadual</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px; padding: 15px;">
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
                     Finalizar Cadastro de Candidatura
                 </button>
             </form>
@@ -59,6 +114,7 @@
             <button class="btn btn-voltar" onclick="window.location.href='/cadastro'">⬅ Voltar</button>
         </footer>
     </div>
+<<<<<<< HEAD
     <script>
     const estadoSelect = document.getElementById("estado");
     const cidadeSelect = document.getElementById("cidade");
@@ -97,5 +153,42 @@
             .catch(err => console.error("Erro ao carregar cidades:", err));
     });
 </script>
+=======
+
+    <script>
+        const regrasCargos = {
+            "Presidente": { digitos: 2, placeholder: "Ex: 12" },
+            "Governador": { digitos: 2, placeholder: "Ex: 45" },
+            "Senador": { digitos: 3, placeholder: "Ex: 123" },
+            "Deputado Federal": { digitos: 4, placeholder: "Ex: 1234" },
+            "Deputado Estadual": { digitos: 5, placeholder: "Ex: 12345" }
+        };
+
+        const selectCargo = document.getElementById("select-cargo");
+        const inputNumero = document.getElementById("input-numero");
+
+        function atualizarValidacao() {
+            const cargoSelecionado = selectCargo.value;
+            const regra = regrasCargos[cargoSelecionado];
+
+            if (regra) {
+                const minimo = Math.pow(10, regra.digitos - 1);
+                const maximo = Math.pow(10, regra.digitos) - 1;
+
+                inputNumero.min = minimo;
+                inputNumero.max = maximo;
+                inputNumero.placeholder = regra.placeholder;
+
+                if (inputNumero.value && inputNumero.value.length !== regra.digitos) {
+                    inputNumero.value = "";
+                }
+            }
+        }
+
+        selectCargo.addEventListener("change", atualizarValidacao);
+
+        atualizarValidacao();
+    </script>
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
 </body>
 </html>

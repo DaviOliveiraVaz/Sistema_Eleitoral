@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acesso ao Sistema</title>
+<<<<<<< HEAD
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="login-page">
@@ -15,6 +16,91 @@
             <div class="form-group">
                 <label for="tipoLogin">Tipo de Acesso</label>
                 <select name="tipoLogin" id="tipoLogin" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+=======
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f7f6;
+        }
+
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-container h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input, 
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus {
+            border-color: #0056b3;
+            outline: none;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #004494;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Entrar</h2>
+        <form action="/login" method="POST">
+            
+            <div class="form-group">
+                <label for="tipoLogin">Tipo de Acesso</label>
+                <select name="tipoLogin" id="tipoLogin" required>
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
                     <option value="" disabled selected>Selecione seu perfil...</option>
                     <option value="Eleitor">Eleitor</option>
                     <option value="Candidato">Candidato</option>
@@ -29,6 +115,7 @@
 
             <div class="form-group">
                 <label for="senha">Senha</label>
+<<<<<<< HEAD
                 <input type="password" name="senha" id="senha" placeholder="Digite sua senha" required>
             </div>
 
@@ -37,6 +124,14 @@
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%;">Acessar</button>
+=======
+                <input type="password" name="senha" id="senha" placeholder="Digite sua senha">
+            </div>
+
+            <a href="/cadastro">Não possui cadastro? Realize agora!</a>
+
+            <button type="submit" class="btn-submit">Acessar</button>
+>>>>>>> e077e616750ecbc5f6dee404d7c35f30468a753e
         </form>
     </div>
 </body>
