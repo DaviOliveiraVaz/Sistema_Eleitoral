@@ -6,54 +6,79 @@
     <title>Sistema Eleitoral - Cadastro</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="login-page"> <div class="login-wrapper">
+<body class="login-page"> 
+    <div class="login-wrapper">
         <header class="login-header">
             <h1>Cadastro de Eleitor</h1>
             <p>Insira seus dados para habilitar o acesso à urna</p>
         </header>
-        
-        <div style="padding: 30px;">
+        <div class="home-content">
             <form action="/cadastro_eleitor" method="POST">
                 <div class="form-group">
                     <label>Nome Completo</label>
                     <input type="text" name="nome" placeholder="Seu nome" required>
                 </div>
-
                 <div class="form-group">
                     <label>CPF</label>
                     <input type="text" name="cpf" placeholder="000.000.000-00" maxlength="11" required>
                 </div>
-
+                <div class="form-group">
+                    <label>Data de Nascimento</label>
+                    <input type="date" name="dataNascimento" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div class="instructions-container">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Estado (UF)</label>
+                        <select name="estado" id="estado" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="" disabled selected>Selecione o Estado</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label>Cidade</label>
+                        <select name="cidade" id="cidade" required disabled style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="" disabled selected>Primeiro selecione o Estado</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label>Senha</label>
                     <input type="password" name="senha" placeholder="Senha" required>
                 </div>
-
-                <div class="form-group">
-    <label>Data de Nascimento</label>
-    <input type="date" name="dataNascimento" required>
-</div>
-
-                <div class="instructions-container">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Idade</label>
-                        <input type="number" name="idade" required>
-                    </div>
-                    <div class="form-group" style="flex: 2;">
-                        <label>Naturalidade</label>
-                        <input type="text" name="naturalidade" placeholder="Cidade/UF">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px; padding: 15px;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px; margin-top: 15px;">
                     Finalizar Cadastro
                 </button>
             </form>
         </div>
-
         <footer class="login-footer">
             <button class="btn btn-voltar" onclick="window.location.href='/cadastro'">⬅ Voltar</button>
         </footer>
     </div>
+    <script>
+        const ufSelect = document.getElementById('estado');
+        const cidadeSelect = document.getElementById('cidade');
+        fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
+            .then(res => res.json())
+            .then(estados => {
+                estados.forEach(estado => {
+                    ufSelect.innerHTML += `<option value="${estado.sigla}">${estado.nome}</option>`;
+                });
+            })
+            .catch(erro => console.error(erro));
+        ufSelect.addEventListener('change', () => {
+            const uf = ufSelect.value;
+            cidadeSelect.innerHTML = '<option value="">Carregando...</option>';
+            cidadeSelect.disabled = true;
+            fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+                .then(res => res.json())
+                .then(cidades => {
+                    cidadeSelect.innerHTML = '<option value="" disabled selected>Selecione a cidade</option>';
+                    cidades.forEach(cidade => {
+                        cidadeSelect.innerHTML += `<option value="${cidade.nome}">${cidade.nome}</option>`;
+                    });
+                    cidadeSelect.disabled = false;
+                })
+                .catch(erro => console.error(erro));
+        });
+    </script>
 </body>
 </html>
