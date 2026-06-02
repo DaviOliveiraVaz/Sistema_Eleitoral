@@ -525,3 +525,57 @@ body.home-page {
     padding: 40px;
     background-color: #f4f4f9;
 }
+
+.navbar {
+    background-color: #1a1a2e;
+    padding: 0 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.navbar-brand {
+    color: #e0e0e0;
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.navbar-link {
+    color: #ccc;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-size: 0.88rem;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.navbar-link:hover {
+    background-color: #2e2e4e;
+    color: #fff;
+}
+
+.navbar-sair {
+    background-color: #c0392b;
+    color: #fff !important;
+    margin-left: 8px;
+}
+
+.navbar-sair:hover {
+    background-color: #e74c3c !important;
+}

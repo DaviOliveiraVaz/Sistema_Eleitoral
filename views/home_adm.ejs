@@ -6,20 +6,29 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="main-layout">
-        <nav class="sidebar">
-            <h2>Administração</h2>
-            <ul class="sidebar-menu">
-                <li><a href="/admin">Candidaturas (Homologar)</a></li>
-                <li><a href="/consulta_candidatos">Lista de Candidatos</a></li>
-                <li><a href="/resultados">Apuração dos Votos</a></li>
-                <li><a href="/sair" style="color: #e74c3c;">Sair</a></li>
-            </ul>
-        </nav>
-        <main class="content-area">
-            <h1>Painel Administrativo</h1>
-            <p>Gerencie o sistema eleitoral e as homologações.</p>
-        </main>
-    </div>
+    <%- include('navbar') %>
+
+    <main class="content-area">
+        <h1>Painel Administrativo</h1>
+        <p>Gerencie as solicitações de candidatura e acompanhe o sistema.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; max-width: 700px;">
+            <a href="/admin" class="login-card" style="text-decoration:none;">
+                <div class="card-icon">✅</div>
+                <h3>Homologação</h3>
+                <p>Aprovar ou rejeitar candidaturas pendentes</p>
+            </a>
+            <a href="/consulta_candidatos" class="login-card" style="text-decoration:none;">
+                <div class="card-icon">🔍</div>
+                <h3>Gerenciar Candidatos</h3>
+                <p>Editar e excluir candidatos</p>
+            </a>
+            <a href="/resultados" class="login-card" style="text-decoration:none;">
+                <div class="card-icon">📊</div>
+                <h3>Apuração</h3>
+                <p>Acompanhar resultado dos votos</p>
+            </a>
+        </div>
+    </main>
 </body>
 </html>
