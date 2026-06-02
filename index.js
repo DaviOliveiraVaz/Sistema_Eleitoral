@@ -311,7 +311,7 @@ app.get("/cadastro_eleitor", function (req, res) {
 
 app.post("/cadastro_eleitor", async (req, res) => {
     try {
-        const { nome, cpf, municipio, idade, naturalidade, senha } = req.body;
+        const { nome, cpf, dataNascimento, estado, cidade, senha } = req.body;
 
         const eleitorExistente = await Eleitor.findOne({ cpf: cpf });
         
@@ -324,14 +324,23 @@ app.post("/cadastro_eleitor", async (req, res) => {
             `);
         }
 
-        const hash = await bcrypt.hash(req.body.senha, saltRounds);
+        const hoje = new Date();
+        const nascimento = new Date(dataNascimento);
+        let idadedecalculo = hoje.getFullYear() - nascimento.getFullYear();
+        const m = hoje.getMonth() - nascimento.getMonth();
+        if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+            idadedecalculo--;
+        }
+
+        const hash = await bcrypt.hash(senha, saltRounds);
 
         const novoEleitor = new Eleitor({
             nome,
             cpf,
-            municipio,
-            idade: Number(idade),
-            naturalidade,
+            dataNascimento,
+            idade: idadedecalculo,
+            estado,
+            cidade,
             senha: hash
         });
 
@@ -355,17 +364,30 @@ app.get("/cadastro_candidato", function (req, res) {
 
 app.post("/cadastro_candidato", async (req, res) => {
     try {
-        const { nome, cpf, municipio, idade, naturalidade, senha } = req.body;
+        const { nome, cpf, dataNascimento, estado, cidade, senha } = req.body;
         const existente = await Candidato.findOne({ $or: [{ cpf }] });
         if (existente) {
             return res.send("<script>alert('CPF já cadastrado!'); window.history.back();</script>");
         }
 
-        const hash = await bcrypt.hash(req.body.senha, saltRounds);
+        const hoje = new Date();
+        const nascimento = new Date(dataNascimento);
+        let idadedecalculo = hoje.getFullYear() - nascimento.getFullYear();
+        const m = hoje.getMonth() - nascimento.getMonth();
+        if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+            idadedecalculo--;
+        }
+
+        const hash = await bcrypt.hash(senha, saltRounds);
 
         const novoCandidato = new Candidato({
-            nome, cpf, municipio, 
-            idade: Number(idade), naturalidade, senha: hash
+            nome,
+            cpf,
+            dataNascimento,
+            idade: idadedecalculo,
+            estado,
+            cidade,
+            senha: hash
         });
         await novoCandidato.save();
         res.send("<script>alert('Cadastro concluído! Faça login no portal para lançar sua candidatura.'); window.location.href = '/login';</script>");
@@ -476,24 +498,33 @@ app.post("/perfil/editar", async (req, res) => {
     try {
         const idUsuario = req.session.id_usuario;
         const tipoAcesso = req.session.tipoAcesso;
-        const { nome, idade, municipio, naturalidade } = req.body;
+        const { nome, dataNascimento, estado, cidade } = req.body;
 
         if (!idUsuario || tipoAcesso === 'Administrador') {
             return res.redirect("/login");
+        }
+
+        const hoje = new Date();
+        const nascimento = new Date(dataNascimento);
+        let idadedecalculo = hoje.getFullYear() - nascimento.getFullYear();
+        const m = hoje.getMonth() - nascimento.getMonth();
+        if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+            idadedecalculo--;
         }
 
         let Modelo = tipoAcesso === 'Eleitor' ? Eleitor : Candidato;
 
         await Modelo.findByIdAndUpdate(idUsuario, {
             nome,
-            idade: Number(idade),
-            municipio,
-            naturalidade
+            dataNascimento,
+            idade: idadedecalculo,
+            estado,
+            cidade
         });
 
         res.send(`
             <script>
-                alert('Dados atualizados com sucesso!');
+                alert('Dados updated com sucesso!');
                 window.location.href = "/perfil";
             </script>
         `);

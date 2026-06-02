@@ -19,7 +19,7 @@
                     <input type="text" name="nome" placeholder="Seu nome" required>
                 </div>
                 
-                <div style="display: flex; gap: 15px;">
+                <div class="instructions-container">
                     <div class="form-group" style="flex: 1;">
                         <label>CPF</label> 
                         <input type="text" name="cpf" placeholder="000.000.000-00" maxlength="11" required>
@@ -54,40 +54,5 @@
             <button class="btn btn-voltar" onclick="window.location.href='/cadastro'">⬅ Voltar</button>
         </footer>
     </div>
-
-    <script>
-        const regrasCargos = {
-            "Presidente": { digitos: 2, placeholder: "Ex: 12" },
-            "Governador": { digitos: 2, placeholder: "Ex: 45" },
-            "Senador": { digitos: 3, placeholder: "Ex: 123" },
-            "Deputado Federal": { digitos: 4, placeholder: "Ex: 1234" },
-            "Deputado Estadual": { digitos: 5, placeholder: "Ex: 12345" }
-        };
-
-        const selectCargo = document.getElementById("select-cargo");
-        const inputNumero = document.getElementById("input-numero");
-
-        function atualizarValidacao() {
-            const cargoSelecionado = selectCargo.value;
-            const regra = regrasCargos[cargoSelecionado];
-
-            if (regra) {
-                const minimo = Math.pow(10, regra.digitos - 1);
-                const maximo = Math.pow(10, regra.digitos) - 1;
-
-                inputNumero.min = minimo;
-                inputNumero.max = maximo;
-                inputNumero.placeholder = regra.placeholder;
-
-                if (inputNumero.value && inputNumero.value.length !== regra.digitos) {
-                    inputNumero.value = "";
-                }
-            }
-        }
-
-        selectCargo.addEventListener("change", atualizarValidacao);
-
-        atualizarValidacao();
-    </script>
 </body>
 </html>

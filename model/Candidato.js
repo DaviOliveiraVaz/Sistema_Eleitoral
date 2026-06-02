@@ -9,9 +9,10 @@ const CandidatoSchema = new Schema({
     enum: ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual"]
   },
   partido: { type: String },
-  municipio: { type: String, required: true },
+  dataNascimento: { type: Date, required: true },
   idade: { type: Number, required: true },
-  naturalidade: { type: String, required: false },
+  estado: { type: String, required: true },
+  cidade: { type: String, required: true },
   nacionalidade: { type: String, required: true, default: "Brasileira" },
   slogan: { type: String },
   descricao: { type: String }, 
