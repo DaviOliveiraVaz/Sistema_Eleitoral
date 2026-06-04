@@ -12,6 +12,7 @@
             <h1>Cadastro de Eleitor</h1>
             <p>Insira seus dados para habilitar o acesso à urna</p>
         </header>
+        
         <div class="home-content">
             <form action="/cadastro_eleitor" method="POST">
                 <div class="form-group">
@@ -40,10 +41,12 @@
                         </select>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label>Senha</label>
                     <input type="password" name="senha" placeholder="Senha" required>
                 </div>
+
                 <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px; margin-top: 15px;">
                     Finalizar Cadastro
                 </button>
@@ -64,6 +67,7 @@
                 });
             })
             .catch(erro => console.error(erro));
+            
         ufSelect.addEventListener('change', () => {
             const uf = ufSelect.value;
             cidadeSelect.innerHTML = '<option value="">Carregando...</option>';

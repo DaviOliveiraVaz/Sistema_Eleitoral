@@ -44,7 +44,8 @@
                     <label>Senha</label>
                     <input type="password" name="senha" placeholder="Senha" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px;">
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 50px; margin-top: 15px;">
                     Finalizar Cadastro de Candidatura
                 </button>
             </form>
@@ -64,6 +65,7 @@
                 });
             })
             .catch(erro => console.error(erro));
+        
         ufSelect.addEventListener('change', () => {
             const uf = ufSelect.value;
             cidadeSelect.innerHTML = '<option value="">Carregando...</option>';

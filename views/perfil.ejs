@@ -28,21 +28,34 @@
                     </div>
                     <div class="form-group" style="flex: 1;">
                         <label>Data de Nascimento</label>
-                        <input type="date" name="dataNascimento" value="<%= usuario.dataNascimento ? usuario.dataNascimento.toISOString().split('T')[0] : '' %>" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <% 
+                            let dataFormatada = '';
+                            if (usuario.dataNascimento) {
+                                const d = new Date(usuario.dataNascimento);
+                                dataFormatada = d.toISOString().split('T')[0];
+                            }
+                        %>
+                        <input type="date" name="dataNascimento" value="<%= dataFormatada %>" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                     </div>
                 </div>
 
-                <div class="instructions-container">
+                <div class="form-group">
+                    <label>Idade Atual</label>
+                    <input type="number" value="<%= usuario.idade %>" disabled style="background-color: #eee;">
+                    <small style="color: #666;">Calculada automaticamente a partir da data de nascimento.</small>
+                </div>
+
+                <div class="instructions-container" style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex: 1;">
                         <label>Estado (UF)</label>
-                        <select name="estado" id="estado" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
-                            <option value="<%= usuario.estado %>" selected><%= usuario.estado %></option>
+                        <select id="estado" name="estado" data-uf-salva="<%= usuario.estado %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">Selecione um estado</option>
                         </select>
                     </div>
                     <div class="form-group" style="flex: 2;">
                         <label>Cidade</label>
-                        <select name="cidade" id="cidade" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
-                            <option value="<%= usuario.cidade %>" selected><%= usuario.cidade %></option>
+                        <select id="cidade" name="cidade" data-cidade-salva="<%= usuario.cidade %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">Selecione uma cidade</option>
                         </select>
                     </div>
                 </div>
@@ -71,46 +84,67 @@
                     </div>
                 <% } %>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Salvar Alterações</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">Salvar Alterações</button>
             </form>
         </div>
     </main>
+
     <script>
-        const ufSelect = document.getElementById('estado');
-        const cidadeSelect = document.getElementById('cidade');
-        const ufSalva = "<%= usuario.estado || '' %>";
-        const cidadeSalva = "<%= usuario.cidade || '' %>";
-        fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
-            .then(res => res.json())
-            .then(estados => {
-                ufSelect.innerHTML = '<option value="" disabled>Selecione o Estado</option>';
-                estados.forEach(estado => {
-                    const selected = estado.sigla === ufSalva ? 'selected' : '';
-                    ufSelect.innerHTML += `<option value="${estado.sigla}" ${selected}>${estado.nome}</option>`;
-                });
-                if (ufSalva) {
-                    carregarCidades(ufSalva, cidadeSalva);
-                }
-            })
-            .catch(erro => console.error(erro));
-        ufSelect.addEventListener('change', () => {
-            carregarCidades(ufSelect.value, '');
-        });
-        function carregarCidades(uf, cidadeSelecionada) {
+        const estadoSelect = document.getElementById("estado");
+        const cidadeSelect = document.getElementById("cidade");
+        
+        const ufSalva = estadoSelect.getAttribute("data-uf-salva");
+        const cidadeSalva = cidadeSelect.getAttribute("data-cidade-salva");
+
+        function carregarCidades(uf, preSelecionar = '') {
             cidadeSelect.innerHTML = '<option value="">Carregando...</option>';
             cidadeSelect.disabled = true;
             fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
                 .then(res => res.json())
                 .then(cidades => {
-                    cidadeSelect.innerHTML = '<option value="" disabled>Selecione a cidade</option>';
+                    cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
                     cidades.forEach(cidade => {
-                        const selected = city.nome === cidadeSelecionada || cidade.nome === cidadeSelecionada ? 'selected' : '';
-                        cidadeSelect.innerHTML += `<option value="${cidade.nome}" ${selected}>${cidade.nome}</option>`;
+                        const option = document.createElement("option");
+                        option.value = cidade.nome;
+                        option.textContent = cidade.nome;
+                        if (cidade.nome === preSelecionar) {
+                            option.selected = true;
+                        }
+                        cidadeSelect.appendChild(option);
                     });
                     cidadeSelect.disabled = false;
                 })
-                .catch(erro => console.error(erro));
+                .catch(err => console.error("Erro ao carregar cidades:", err));
         }
+
+        fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome")
+            .then(res => res.json())
+            .then(estados => {
+                estados.forEach(uf => {
+                    const option = document.createElement("option");
+                    option.value = uf.sigla;
+                    option.textContent = uf.nome;
+                    if (uf.sigla === ufSalva) {
+                        option.selected = true;
+                    }
+                    estadoSelect.appendChild(option);
+                });
+
+                if (ufSalva) {
+                    carregarCidades(ufSalva, cidadeSalva);
+                }
+            })
+            .catch(err => console.error("Erro ao carregar estados:", err));
+
+        estadoSelect.addEventListener("change", () => {
+            const uf = estadoSelect.value;
+            if (uf) {
+                carregarCidades(uf);
+            } else {
+                cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+                cidadeSelect.disabled = true;
+            }
+        });
     </script>
 </body>
 </html>
