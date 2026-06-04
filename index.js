@@ -364,6 +364,9 @@ app.post("/cadastro_eleitor", async (req, res) => {
             senha: hash
         });
 
+        console.log("==== TESTE TAREFA 3: ELEITOR ====");
+        console.log("Idade calculada salva no objeto:", novoEleitor.idade);
+
         await novoEleitor.save();
 
         res.send(`

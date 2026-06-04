@@ -31,12 +31,11 @@
                         <% 
                             let dataFormatada = '';
                             if (usuario.dataNascimento) {
-                                // Formata a data para o padrão YYYY-MM-DD aceito pelo input type="date"
                                 const d = new Date(usuario.dataNascimento);
                                 dataFormatada = d.toISOString().split('T')[0];
                             }
                         %>
-                        <input type="date" name="dataNascimento" value="<%= dataFormatada %>" required>
+                        <input type="date" name="dataNascimento" value="<%= dataFormatada %>" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                     </div>
                 </div>
 
@@ -46,18 +45,19 @@
                     <small style="color: #666;">Calculada automaticamente a partir da data de nascimento.</small>
                 </div>
 
-                <div class="form-group">
-                    <label>Estado (UF)</label>
-                    <select id="estado" name="estado" data-uf-salva="<%= usuario.estado %>" required>
-                        <option value="">Selecione um estado</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Cidade</label>
-                    <select id="cidade" name="cidade" data-cidade-salva="<%= usuario.cidade %>" required>
-                        <option value="">Selecione uma cidade</option>
-                    </select>
+                <div class="instructions-container" style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Estado (UF)</label>
+                        <select id="estado" name="estado" data-uf-salva="<%= usuario.estado %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">Selecione um estado</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label>Cidade</label>
+                        <select id="cidade" name="cidade" data-cidade-salva="<%= usuario.cidade %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">Selecione uma cidade</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -84,7 +84,7 @@
                     </div>
                 <% } %>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Salvar Alterações</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">Salvar Alterações</button>
             </form>
         </div>
     </main>
@@ -96,9 +96,9 @@
         const ufSalva = estadoSelect.getAttribute("data-uf-salva");
         const cidadeSalva = cidadeSelect.getAttribute("data-cidade-salva");
 
-        // Função para carregar cidades
         function carregarCidades(uf, preSelecionar = '') {
             cidadeSelect.innerHTML = '<option value="">Carregando...</option>';
+            cidadeSelect.disabled = true;
             fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
                 .then(res => res.json())
                 .then(cidades => {
@@ -112,11 +112,11 @@
                         }
                         cidadeSelect.appendChild(option);
                     });
+                    cidadeSelect.disabled = false;
                 })
                 .catch(err => console.error("Erro ao carregar cidades:", err));
         }
 
-        // Carregar estados (UF)
         fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome")
             .then(res => res.json())
             .then(estados => {
@@ -130,20 +130,19 @@
                     estadoSelect.appendChild(option);
                 });
 
-                // Se tinha uma UF salva, já carrega as cidades logo após carregar os estados
                 if (ufSalva) {
                     carregarCidades(ufSalva, cidadeSalva);
                 }
             })
             .catch(err => console.error("Erro ao carregar estados:", err));
 
-        // Quando o usuário alterar o estado manualmente, recarrega as cidades
         estadoSelect.addEventListener("change", () => {
             const uf = estadoSelect.value;
-            if(uf) {
+            if (uf) {
                 carregarCidades(uf);
             } else {
                 cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+                cidadeSelect.disabled = true;
             }
         });
     </script>
