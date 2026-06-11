@@ -23,7 +23,8 @@ const CandidatoSchema = new Schema({
     default: "Pendente"
   },
   votou: { type: Boolean, default: false },
-  senha: { type: String, required: true }
+  senha: { type: String, required: true },
+  ativo: { type: Boolean, default: true }
 });
 
 module.exports = model("Candidato", CandidatoSchema, "Candidatos");

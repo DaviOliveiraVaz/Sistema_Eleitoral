@@ -557,6 +557,83 @@ app.post("/perfil/editar", async (req, res) => {
     }
 });
 
+app.get("/consulta_candidatos", async (req, res) => {
+    try {
+        if (!req.session.id_usuario) {
+            return res.redirect('/login');
+        }
+
+        const candidatos = await Candidato.find({ cargo: { $exists: true, $ne: null } }).sort({ nome: 1 });
+
+        const candidatosPorCargo = {};
+        candidatos.forEach(candidato => {
+            if (!candidatosPorCargo[candidato.cargo]) {
+                candidatosPorCargo[candidato.cargo] = [];
+            }
+            candidatosPorCargo[candidato.cargo].push(candidato);
+        });
+
+        res.render("consulta_candidatos.ejs", { candidatosPorCargo });
+    } catch (error) {
+        res.status(500).send("Erro ao carregar a lista de candidatos.");
+    }
+});
+
+app.post("/candidatos/:id/editar", async (req, res) => {
+    try {
+        if (req.session.tipoAcesso !== 'Administrador') {
+            return res.redirect('/');
+        }
+
+        // Recebendo cidade e estado no lugar de municipio
+        const { nome, partido, cidade, estado, numero, status } = req.body;
+        
+        await Candidato.findByIdAndUpdate(req.params.id, {
+            nome,
+            partido,
+            cidade,
+            estado,
+            numero: Number(numero),
+            status
+        });
+
+        res.redirect("/consulta_candidatos");
+    } catch (error) {
+        res.status(500).send("Erro ao editar candidato.");
+    }
+});
+
+app.post("/candidatos/:id/inativar", async (req, res) => {
+    try {
+        if (req.session.tipoAcesso !== 'Administrador') {
+            return res.redirect('/');
+        }
+
+        // Busca o candidato para saber se ele está ativo ou inativo
+        const candidato = await Candidato.findById(req.params.id);
+        
+        // Inverte o status atual (Se true vira false, se false vira true)
+        await Candidato.findByIdAndUpdate(req.params.id, { ativo: !candidato.ativo });
+        
+        res.redirect("/consulta_candidatos");
+    } catch (error) {
+        res.status(500).send("Erro ao alterar status do cadastro.");
+    }
+});
+
+app.get("/admin", async (req, res) => {
+    try {
+        if (req.session.tipoAcesso !== 'Administrador') {
+            return res.redirect('/login');
+        }
+
+        const docs = await Candidato.find({ cargo: { $exists: true, $ne: null } });
+        res.render("admin.ejs", { Candidatos: docs });
+    } catch (error) {
+        res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
+    }
+});
+
 app.listen("3000", function () {
   console.log("Servidor rodando na porta 3000!");
 });

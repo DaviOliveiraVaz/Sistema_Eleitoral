@@ -4,23 +4,27 @@
     <div class="navbar-links">
         <% if (tipoAcesso) { %>
 
-            <a href="/lista_candidatos" class="navbar-link">👥 Candidatos</a>
             <a href="/resultados" class="navbar-link">📊 Apuração</a>
 
             <% if (tipoAcesso === 'Eleitor' || tipoAcesso === 'Candidato') { %>
+                <a href="/lista_candidatos" class="navbar-link">👥 Candidatos</a>
                 <a href="/urna" class="navbar-link">🗳️ Votar</a>
+                <a href="/perfil" class="navbar-link">👤 Perfil</a>
             <% } %>
 
             <% if (tipoAcesso === 'Candidato') { %>
+                <a href="/lista_candidatos" class="navbar-link">👥 Candidatos</a>
                 <a href="/minha_candidatura" class="navbar-link">🏛️ Minha Campanha</a>
+                <a href="/perfil" class="navbar-link">👤 Perfil</a>
             <% } %>
 
             <% if (tipoAcesso === 'Administrador') { %>
                 <a href="/admin" class="navbar-link">✅ Homologação</a>
-                <a href="/consulta_candidatos" class="navbar-link">🔍 Gerenciar</a>
+                <a href="/consulta_candidatos" class="navbar-link">🔍 Candidatos</a>
+                <a href="/consulta_eleitores" class="navbar-link">🔍 Eleitores</a>
+                <a href="/home_adm" class="navbar-link">Home</a>
             <% } %>
 
-            <a href="/perfil" class="navbar-link">👤 Perfil</a>
             <a href="/sair" class="navbar-link navbar-sair">🚪 Sair</a>
 
         <% } else { %>
