@@ -183,7 +183,11 @@ app.get("/urna", async function (req, res) {
             `);
         }
 
-        const docs = await Candidato.find({ status: "Homologado" });
+        // A urna só carrega candidatos homologados E ativos
+const docs = await Candidato.find({ 
+    status: "Homologado", 
+    ativo: true 
+});
         res.render("urna.ejs", { Candidatos: docs });
 
     } catch (error) {
@@ -306,7 +310,11 @@ app.post("/admin/homologar", async (req, res) => {
 
 app.get("/resultados", async (req, res) => {
   try {
-    const candidatos = await Candidato.find({ status: "Homologado" }).sort({ votos: -1 });
+    // A apuração só contabiliza os homologados E ativos
+const candidatos = await Candidato.find({ 
+    status: "Homologado", 
+    ativo: true 
+}).sort({ votos: -1 });
 
     const resultadosPorCargo = {};
 
@@ -427,7 +435,11 @@ app.get("/home_adm", (req, res) => res.render("home_adm.ejs"));
 
 app.get("/lista_candidatos", async (req, res) => {
     try {
-        const candidatos = await Candidato.find({ status: "Homologado" }).sort({ nome: 1 });
+        // Mostra apenas candidatos homologados E ativos
+const candidatos = await Candidato.find({ 
+    status: "Homologado", 
+    ativo: true 
+}).sort({ nome: 1 });
 
         const candidatosPorCargo = {};
         candidatos.forEach(candidato => {
@@ -627,7 +639,10 @@ app.get("/admin", async (req, res) => {
             return res.redirect('/login');
         }
 
-        const docs = await Candidato.find({ cargo: { $exists: true, $ne: null } });
+const docs = await Candidato.find({ 
+    status: "Pendente", 
+    cargo: { $exists: true, $ne: null } 
+});
         res.render("admin.ejs", { Candidatos: docs });
     } catch (error) {
         res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
