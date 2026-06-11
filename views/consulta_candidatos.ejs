@@ -23,7 +23,7 @@
             <div class="form-group">
                 <label for="filtroCargo">Filtrar por Cargo:</label>
                 <select id="filtroCargo" style="width: 100%; padding: 12px; border-radius: 4px;" onchange="filtrarCandidatos()">
-                    <option value="Todos">Todos os Cargos</option>
+                    <option value="Todos">Todos os Cadastros</option>
                     <% for (let cargo in candidatosPorCargo) { %>
                         <option value="<%= cargo.replace(/\s/g, '') %>"><%= cargo %></option>
                     <% } %>
@@ -38,7 +38,6 @@
                             <h3 class="section-title" style="color: #3498db; border-color: #3498db;"><%= cargo %></h3>
                             <div style="display: grid; gap: 15px; margin-top: 20px;">
                                 <% candidatosDoCargo.forEach((candidato) => { %>
-                                    <!-- A DIV inteira virou um botão clicável com os dados do candidato -->
                                     <div class="instruction-item card-clicavel" 
                                          data-candidato="<%= encodeURIComponent(JSON.stringify(candidato)) %>"
                                          onclick="abrirModalDetalhesCandidato(this)"
@@ -46,17 +45,17 @@
                                         
                                         <div>
                                             <strong style="font-size: 1.2rem;"><%= candidato.nome %></strong><br>
-                                            <span>Partido: <strong><%= candidato.partido %></strong></span><br>
+                                            <span>Partido: <strong><%= candidato.partido || 'Não definido' %></strong></span><br>
                                             <span>Cidade/UF: <%= candidato.cidade %> - <%= candidato.estado %></span>
                                         </div>
                                         <div style="text-align: right;">
-                                            <span style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;"><%= candidato.numero %></span><br>
+                                            <span style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;"><%= candidato.numero || '---' %></span><br>
                                             <span class="status-aprovado" style="font-size: 0.8rem;"><%= candidato.status %></span>
 
                                             <% if (tipoAcesso === 'Administrador') { %>
                                             <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
                                                 <button
-                                                    onclick="event.stopPropagation(); abrirModalEditar('<%= candidato._id %>', '<%= candidato.nome %>', '<%= candidato.partido %>', '<%= candidato.cidade %>', '<%= candidato.estado %>', '<%= candidato.numero %>', '<%= candidato.status %>')"
+                                                    onclick="event.stopPropagation(); abrirModalEditar('<%= candidato._id %>', '<%= candidato.nome %>', '<%= candidato.partido || '' %>', '<%= candidato.cidade %>', '<%= candidato.estado %>', '<%= candidato.numero || '' %>', '<%= candidato.status %>')"
                                                     class="btn btn-primary" style="background-color: #f0a500; padding: 5px 12px; font-size: 0.85rem;">
                                                     ✏️ Editar
                                                 </button>
@@ -78,18 +77,15 @@
         </div>
     </div>
 
-    <!-- MODAL DETALHES GERAIS (NOVO) -->
     <div id="modalDetalhes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
         <div class="login-wrapper" style="max-width:550px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
             <button onclick="fecharModalDetalhes()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #555;">&times;</button>
             <header class="login-header" style="margin-bottom: 10px;"><h2 style="margin-bottom: 0;">📋 Perfil Completo</h2></header>
             <div id="conteudoDetalhes" style="padding: 10px 20px 20px; text-align: left; line-height: 1.6; color: #333;">
-                <!-- Preenchido via JS -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- MODAL INATIVAR -->
     <div id="modalInativar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
         <div class="login-wrapper" style="max-width:420px; text-align:center;">
             <h3 style="color:#e74c3c; margin-bottom:10px;">⚠️ Alterar Status do Cadastro</h3>
@@ -103,7 +99,6 @@
         </div>
     </div>
 
-    <!-- MODAL EDIÇÃO -->
     <div id="modalEditar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
         <div class="login-wrapper" style="max-width:500px;">
             <header class="login-header"><h2>✏️ Editar Candidato</h2></header>
@@ -114,7 +109,7 @@
                 </div>
                 <div class="form-group">
                     <label>Partido</label>
-                    <input type="text" id="editPartido" name="partido" required>
+                    <input type="text" id="editPartido" name="partido">
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <div class="form-group" style="flex: 1;">
@@ -132,7 +127,7 @@
                 </div>
                 <div class="form-group">
                     <label>Número</label>
-                    <input type="text" id="editNumero" name="numero" required>
+                    <input type="text" id="editNumero" name="numero">
                 </div>
                 <div class="form-group">
                     <label>Status</label>
@@ -140,6 +135,7 @@
                         <option value="Homologado">Homologado</option>
                         <option value="Pendente">Pendente</option>
                         <option value="Rejeitado">Rejeitado</option>
+                        <option value="Nenhuma">Nenhuma</option>
                     </select>
                 </div>
                 <div style="display:flex; gap:12px; justify-content:flex-end; margin-top: 10px;">
@@ -180,8 +176,8 @@
                 <p style="margin-bottom: 5px;"><strong>Descrição:</strong> ${candidato.descricao || 'Sem descrição cadastrada.'}</p>
 
                 <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; margin-bottom: 10px;">⚙️ Sistema</h4>
-                <p style="margin-bottom: 5px;"><strong>Status de Homologação:</strong> <span class="status-aprovado">${candidato.status}</span></p>
-                <p style="margin-bottom: 5px;"><strong>Votos Recebidos:</strong> ${candidato.votos}</p>
+                <p style="margin-bottom: 5px;"><strong>Status do Sistema:</strong> <span class="status-aprovado">${candidato.status}</span></p>
+                <p style="margin-bottom: 5px;"><strong>Votos Recebidos:</strong> ${candidato.votos || 0}</p>
                 <p style="margin-bottom: 5px;"><strong>Votou como eleitor:</strong> ${candidato.votou ? 'Sim' : 'Não'}</p>
                 <p style="margin-bottom: 5px;"><strong>Cadastro Ativo:</strong> ${candidato.ativo !== false ? 'Sim' : 'Não'}</p>
             `;
