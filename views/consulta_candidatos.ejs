@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consulta de Candidatos</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .card-clicavel { cursor: pointer; transition: 0.2s; }
+        .card-clicavel:hover { border-color: #3498db; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    </style>
 </head>
 <body>
     <%- include('navbar') %>
@@ -34,7 +38,12 @@
                             <h3 class="section-title" style="color: #3498db; border-color: #3498db;"><%= cargo %></h3>
                             <div style="display: grid; gap: 15px; margin-top: 20px;">
                                 <% candidatosDoCargo.forEach((candidato) => { %>
-                                    <div class="instruction-item" style="display: flex; justify-content: space-between; align-items: center; text-align: left;">
+                                    <!-- A DIV inteira virou um botão clicável com os dados do candidato -->
+                                    <div class="instruction-item card-clicavel" 
+                                         data-candidato="<%= encodeURIComponent(JSON.stringify(candidato)) %>"
+                                         onclick="abrirModalDetalhesCandidato(this)"
+                                         style="display: flex; justify-content: space-between; align-items: center; text-align: left; opacity: <%= candidato.ativo !== false ? '1' : '0.6' %>;">
+                                        
                                         <div>
                                             <strong style="font-size: 1.2rem;"><%= candidato.nome %></strong><br>
                                             <span>Partido: <strong><%= candidato.partido %></strong></span><br>
@@ -47,15 +56,15 @@
                                             <% if (tipoAcesso === 'Administrador') { %>
                                             <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
                                                 <button
-    onclick="abrirModalEditar('<%= candidato._id %>', '<%= candidato.nome %>', '<%= candidato.partido %>', '<%= candidato.cidade %>', '<%= candidato.estado %>', '<%= candidato.numero %>', '<%= candidato.status %>')"
-    class="btn btn-primary" style="background-color: #f0a500; padding: 5px 12px; font-size: 0.85rem;">
-    ✏️ Editar
-</button>
+                                                    onclick="event.stopPropagation(); abrirModalEditar('<%= candidato._id %>', '<%= candidato.nome %>', '<%= candidato.partido %>', '<%= candidato.cidade %>', '<%= candidato.estado %>', '<%= candidato.numero %>', '<%= candidato.status %>')"
+                                                    class="btn btn-primary" style="background-color: #f0a500; padding: 5px 12px; font-size: 0.85rem;">
+                                                    ✏️ Editar
+                                                </button>
                                                 <button
-    onclick="abrirModalInativar('<%= candidato._id %>', '<%= candidato.nome %>', <%= candidato.ativo %>)"
-    class="btn btn-primary" style="background-color: <%= candidato.ativo !== false ? '#e74c3c' : '#2ecc71' %>; padding: 5px 12px; font-size: 0.85rem;">
-    <%= candidato.ativo !== false ? '🚫 Inativar' : '✅ Reativar' %>
-</button>
+                                                    onclick="event.stopPropagation(); abrirModalInativar('<%= candidato._id %>', '<%= candidato.nome %>')"
+                                                    class="btn btn-primary" style="background-color: <%= candidato.ativo !== false ? '#e74c3c' : '#2ecc71' %>; padding: 5px 12px; font-size: 0.85rem;">
+                                                    <%= candidato.ativo !== false ? '🚫 Inativar' : '✅ Reativar' %>
+                                                </button>
                                             </div>
                                             <% } %>
                                         </div>
@@ -69,20 +78,31 @@
         </div>
     </div>
 
-
-    <!-- MODAL EXCLUSÃO -->
-<div id="modalInativar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
-    <div class="login-wrapper" style="max-width:420px; text-align:center;">
-        <h3 style="color:#e74c3c; margin-bottom:10px;">⚠️ Alterar Status do Cadastro</h3>
-        <p style="color:#555; margin-bottom:20px;">Deseja alterar o status de acesso de <strong id="nomeInativar"></strong>?</p>
-        <div style="display:flex; gap:12px; justify-content:center;">
-            <button onclick="fecharModalInativar()" class="btn btn-voltar">Cancelar</button>
-            <form id="formInativar" method="POST" style="margin:0;">
-                <button type="submit" class="btn btn-primary" style="background:#e74c3c;">Confirmar</button>
-            </form>
+    <!-- MODAL DETALHES GERAIS (NOVO) -->
+    <div id="modalDetalhes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div class="login-wrapper" style="max-width:550px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button onclick="fecharModalDetalhes()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #555;">&times;</button>
+            <header class="login-header" style="margin-bottom: 10px;"><h2 style="margin-bottom: 0;">📋 Perfil Completo</h2></header>
+            <div id="conteudoDetalhes" style="padding: 10px 20px 20px; text-align: left; line-height: 1.6; color: #333;">
+                <!-- Preenchido via JS -->
+            </div>
         </div>
     </div>
-</div>
+
+    <!-- MODAL INATIVAR -->
+    <div id="modalInativar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div class="login-wrapper" style="max-width:420px; text-align:center;">
+            <h3 style="color:#e74c3c; margin-bottom:10px;">⚠️ Alterar Status do Cadastro</h3>
+            <p style="color:#555; margin-bottom:20px;">Deseja alterar o status de acesso de <strong id="nomeInativar"></strong>?</p>
+            <div style="display:flex; gap:12px; justify-content:center;">
+                <button onclick="fecharModalInativar()" class="btn btn-voltar">Cancelar</button>
+                <form id="formInativar" method="POST" style="margin:0;">
+                    <button type="submit" class="btn btn-primary" style="background:#e74c3c;">Confirmar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL EDIÇÃO -->
     <div id="modalEditar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
         <div class="login-wrapper" style="max-width:500px;">
@@ -96,20 +116,20 @@
                     <label>Partido</label>
                     <input type="text" id="editPartido" name="partido" required>
                 </div>
-<div style="display: flex; gap: 10px;">
-    <div class="form-group" style="flex: 1;">
-        <label>Estado (UF)</label>
-        <select id="editEstado" name="estado" required style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;">
-            <option value="" disabled>Selecione</option>
-        </select>
-    </div>
-    <div class="form-group" style="flex: 2;">
-        <label>Cidade</label>
-        <select id="editCidade" name="cidade" required style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;">
-            <option value="" disabled>Selecione o estado primeiro</option>
-        </select>
-    </div>
-</div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Estado (UF)</label>
+                        <select id="editEstado" name="estado" required style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;">
+                            <option value="" disabled>Selecione</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label>Cidade</label>
+                        <select id="editCidade" name="cidade" required style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;">
+                            <option value="" disabled>Selecione o estado</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label>Número</label>
                     <input type="text" id="editNumero" name="numero" required>
@@ -130,80 +150,118 @@
         </div>
     </div>
 
- <script>
-    function filtrarCandidatos() {
-        const valorSelecionado = document.getElementById('filtroCargo').value;
-        const grupos = document.querySelectorAll('.grupo-cargo');
-        grupos.forEach(grupo => {
-            grupo.style.display = (valorSelecionado === 'Todos' || grupo.id === 'grupo-' + valorSelecionado) ? 'block' : 'none';
-        });
-    }
-
-    function abrirModalInativar(id, nome) {
-    document.getElementById('nomeInativar').textContent = nome;
-    document.getElementById('formInativar').action = '/candidatos/' + id + '/inativar';
-    document.getElementById('modalInativar').style.display = 'flex';
-}
-function fecharModalInativar() {
-    document.getElementById('modalInativar').style.display = 'none';
-}
-
-    const editEstadoSelect = document.getElementById('editEstado');
-    const editCidadeSelect = document.getElementById('editCidade');
-
-    fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
-        .then(res => res.json())
-        .then(estados => {
-            estados.forEach(estado => {
-                editEstadoSelect.innerHTML += `<option value="${estado.sigla}">${estado.nome}</option>`;
+    <script>
+        function filtrarCandidatos() {
+            const valorSelecionado = document.getElementById('filtroCargo').value;
+            const grupos = document.querySelectorAll('.grupo-cargo');
+            grupos.forEach(grupo => {
+                grupo.style.display = (valorSelecionado === 'Todos' || grupo.id === 'grupo-' + valorSelecionado) ? 'block' : 'none';
             });
-        })
-        .catch(erro => console.error(erro));
+        }
 
-    function carregarCidadesEdit(uf, cidadeSelecionada) {
-        editCidadeSelect.innerHTML = '<option value="">Carregando...</option>';
-        editCidadeSelect.disabled = true;
+        // Funções do Modal de Detalhes Completo
+        function abrirModalDetalhesCandidato(elemento) {
+            const candidato = JSON.parse(decodeURIComponent(elemento.getAttribute('data-candidato')));
+            const dataNasc = candidato.dataNascimento ? candidato.dataNascimento.split('T')[0].split('-').reverse().join('/') : 'Não informada';
+            
+            const html = `
+                <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px;">👤 Dados Pessoais</h4>
+                <p style="margin-bottom: 5px;"><strong>Nome:</strong> ${candidato.nome}</p>
+                <p style="margin-bottom: 5px;"><strong>CPF:</strong> ${candidato.cpf}</p>
+                <p style="margin-bottom: 5px;"><strong>Nascimento:</strong> ${dataNasc} (${candidato.idade} anos)</p>
+                <p style="margin-bottom: 5px;"><strong>Local:</strong> ${candidato.cidade} - ${candidato.estado}</p>
+                <p style="margin-bottom: 5px;"><strong>Nacionalidade:</strong> ${candidato.nacionalidade || 'Brasileira'}</p>
 
-        if (!uf) return;
+                <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; margin-bottom: 10px;">📢 Campanha Eleitoral</h4>
+                <p style="margin-bottom: 5px;"><strong>Cargo Disputado:</strong> ${candidato.cargo || 'Não definido'}</p>
+                <p style="margin-bottom: 5px;"><strong>Número na Urna:</strong> ${candidato.numero || 'Não definido'}</p>
+                <p style="margin-bottom: 5px;"><strong>Partido:</strong> ${candidato.partido || 'Não definido'}</p>
+                <p style="margin-bottom: 5px;"><strong>Slogan:</strong> <em>"${candidato.slogan || 'Sem slogan'}"</em></p>
+                <p style="margin-bottom: 5px;"><strong>Descrição:</strong> ${candidato.descricao || 'Sem descrição cadastrada.'}</p>
 
-        fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+                <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; margin-bottom: 10px;">⚙️ Sistema</h4>
+                <p style="margin-bottom: 5px;"><strong>Status de Homologação:</strong> <span class="status-aprovado">${candidato.status}</span></p>
+                <p style="margin-bottom: 5px;"><strong>Votos Recebidos:</strong> ${candidato.votos}</p>
+                <p style="margin-bottom: 5px;"><strong>Votou como eleitor:</strong> ${candidato.votou ? 'Sim' : 'Não'}</p>
+                <p style="margin-bottom: 5px;"><strong>Cadastro Ativo:</strong> ${candidato.ativo !== false ? 'Sim' : 'Não'}</p>
+            `;
+            document.getElementById('conteudoDetalhes').innerHTML = html;
+            document.getElementById('modalDetalhes').style.display = 'flex';
+        }
+
+        function fecharModalDetalhes() {
+            document.getElementById('modalDetalhes').style.display = 'none';
+        }
+
+        // Funções de Inativar
+        function abrirModalInativar(id, nome) {
+            document.getElementById('nomeInativar').textContent = nome;
+            document.getElementById('formInativar').action = '/candidatos/' + id + '/inativar';
+            document.getElementById('modalInativar').style.display = 'flex';
+        }
+
+        function fecharModalInativar() {
+            document.getElementById('modalInativar').style.display = 'none';
+        }
+
+        // Lógica de Endereço e Edição
+        const editEstadoSelect = document.getElementById('editEstado');
+        const editCidadeSelect = document.getElementById('editCidade');
+
+        fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
             .then(res => res.json())
-            .then(cidades => {
-                editCidadeSelect.innerHTML = '<option value="" disabled>Selecione a cidade</option>';
-                cidades.forEach(cidade => {
-                    const selected = (cidade.nome === cidadeSelecionada) ? 'selected' : '';
-                    editCidadeSelect.innerHTML += `<option value="${cidade.nome}" ${selected}>${cidade.nome}</option>`;
+            .then(estados => {
+                estados.forEach(estado => {
+                    editEstadoSelect.innerHTML += `<option value="${estado.sigla}">${estado.nome}</option>`;
                 });
-                editCidadeSelect.disabled = false;
             })
             .catch(erro => console.error(erro));
-    }
 
-    editEstadoSelect.addEventListener('change', () => {
-        carregarCidadesEdit(editEstadoSelect.value, '');
-    });
+        function carregarCidadesEdit(uf, cidadeSelecionada) {
+            editCidadeSelect.innerHTML = '<option value="">Carregando...</option>';
+            editCidadeSelect.disabled = true;
 
-    function abrirModalEditar(id, nome, partido, cidade, estado, numero, status) {
-        document.getElementById('editNome').value = nome;
-        document.getElementById('editPartido').value = partido;
-        document.getElementById('editNumero').value = numero;
-        document.getElementById('editStatus').value = status;
-        document.getElementById('formEditar').action = '/candidatos/' + id + '/editar';
-        
-        editEstadoSelect.value = estado;
-        carregarCidadesEdit(estado, cidade);
+            if (!uf) return;
 
-        document.getElementById('modalEditar').style.display = 'flex';
-    }
+            fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+                .then(res => res.json())
+                .then(cidades => {
+                    editCidadeSelect.innerHTML = '<option value="" disabled>Selecione a cidade</option>';
+                    cidades.forEach(cidade => {
+                        const selected = (cidade.nome === cidadeSelecionada) ? 'selected' : '';
+                        editCidadeSelect.innerHTML += `<option value="${cidade.nome}" ${selected}>${cidade.nome}</option>`;
+                    });
+                    editCidadeSelect.disabled = false;
+                })
+                .catch(erro => console.error(erro));
+        }
 
-    function fecharModalEditar() {
-        document.getElementById('modalEditar').style.display = 'none';
-    }
+        editEstadoSelect.addEventListener('change', () => {
+            carregarCidadesEdit(editEstadoSelect.value, '');
+        });
 
-    window.addEventListener('click', function(e) {
-        if (e.target === document.getElementById('modalExcluir')) fecharModalExcluir();
-        if (e.target === document.getElementById('modalEditar'))  fecharModalEditar();
-    });
-</script>
+        function abrirModalEditar(id, nome, partido, cidade, estado, numero, status) {
+            document.getElementById('editNome').value = nome;
+            document.getElementById('editPartido').value = partido;
+            document.getElementById('editNumero').value = numero;
+            document.getElementById('editStatus').value = status;
+            document.getElementById('formEditar').action = '/candidatos/' + id + '/editar';
+            
+            editEstadoSelect.value = estado;
+            carregarCidadesEdit(estado, cidade);
+
+            document.getElementById('modalEditar').style.display = 'flex';
+        }
+
+        function fecharModalEditar() {
+            document.getElementById('modalEditar').style.display = 'none';
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById('modalInativar')) fecharModalInativar();
+            if (e.target === document.getElementById('modalEditar'))  fecharModalEditar();
+            if (e.target === document.getElementById('modalDetalhes')) fecharModalDetalhes();
+        });
+    </script>
 </body>
 </html>

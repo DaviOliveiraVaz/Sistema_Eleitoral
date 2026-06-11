@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Eleitores</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .card-clicavel { cursor: pointer; transition: 0.2s; }
+        .card-clicavel:hover { border-color: #3498db; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    </style>
 </head>
 <body>
     <%- include('navbar') %>
@@ -19,11 +23,15 @@
             <div id="listaEleitores">
                 <div style="display: grid; gap: 15px; margin-top: 20px;">
                     <% Eleitores.forEach((eleitor) => { %>
-                        <div class="instruction-item" style="display: flex; justify-content: space-between; align-items: center; text-align: left; opacity: <%= eleitor.ativo !== false ? '1' : '0.6' %>;">
+                        <!-- DIV clicável com detalhes do Eleitor -->
+                        <div class="instruction-item card-clicavel" 
+                             data-eleitor="<%= encodeURIComponent(JSON.stringify(eleitor)) %>"
+                             onclick="abrirModalDetalhesEleitor(this)"
+                             style="display: flex; justify-content: space-between; align-items: center; text-align: left; opacity: <%= eleitor.ativo !== false ? '1' : '0.6' %>;">
+                            
                             <div>
                                 <strong style="font-size: 1.2rem;"><%= eleitor.nome %></strong><br>
                                 <span>CPF: <strong><%= eleitor.cpf %></strong></span><br>
-                                <span>Idade: <%= eleitor.idade %> anos</span><br>
                                 <span>Cidade/UF: <%= eleitor.cidade %> - <%= eleitor.estado %></span><br>
                                 <span style="font-size: 0.85rem; color: <%= eleitor.votou ? '#2ecc71' : '#e74c3c' %>;">
                                     <%= eleitor.votou ? '● Já Votou' : '○ Ainda não votou' %>
@@ -33,12 +41,12 @@
                                 <% if (tipoAcesso === 'Administrador') { %>
                                     <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
                                         <button
-                                            onclick="abrirModalEditar('<%= eleitor._id %>', '<%= eleitor.nome %>', '<%= eleitor.dataNascimento ? eleitor.dataNascimento.toISOString().split('T')[0] : '' %>', '<%= eleitor.cidade %>', '<%= eleitor.estado %>')"
+                                            onclick="event.stopPropagation(); abrirModalEditar('<%= eleitor._id %>', '<%= eleitor.nome %>', '<%= eleitor.dataNascimento ? eleitor.dataNascimento.toISOString().split('T')[0] : '' %>', '<%= eleitor.cidade %>', '<%= eleitor.estado %>')"
                                             class="btn btn-primary" style="background-color: #f0a500; padding: 5px 12px; font-size: 0.85rem;">
                                             ✏️ Editar
                                         </button>
                                         <button
-                                            onclick="abrirModalInativar('<%= eleitor._id %>', '<%= eleitor.nome %>', <%= eleitor.ativo %>)"
+                                            onclick="event.stopPropagation(); abrirModalInativar('<%= eleitor._id %>', '<%= eleitor.nome %>', <%= eleitor.ativo %>)"
                                             class="btn btn-primary" style="background-color: <%= eleitor.ativo !== false ? '#e74c3c' : '#2ecc71' %>; padding: 5px 12px; font-size: 0.85rem;">
                                             <%= eleitor.ativo !== false ? '🚫 Inativar' : '✅ Reativar' %>
                                         </button>
@@ -48,6 +56,17 @@
                         </div>
                     <% }) %>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALHES GERAIS (NOVO) -->
+    <div id="modalDetalhes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div class="login-wrapper" style="max-width:500px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
+            <button onclick="fecharModalDetalhes()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #555;">&times;</button>
+            <header class="login-header" style="margin-bottom: 10px;"><h2 style="margin-bottom: 0;">📋 Perfil do Eleitor</h2></header>
+            <div id="conteudoDetalhes" style="padding: 10px 20px 20px; text-align: left; line-height: 1.6; color: #333;">
+                <!-- Preenchido via JS -->
             </div>
         </div>
     </div>
@@ -102,6 +121,32 @@
     </div>
 
     <script>
+        // Lógica de Detalhes do Eleitor
+        function abrirModalDetalhesEleitor(elemento) {
+            const eleitor = JSON.parse(decodeURIComponent(elemento.getAttribute('data-eleitor')));
+            const dataNasc = eleitor.dataNascimento ? eleitor.dataNascimento.split('T')[0].split('-').reverse().join('/') : 'Não informada';
+            
+            const html = `
+                <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px;">👤 Dados Pessoais</h4>
+                <p style="margin-bottom: 5px;"><strong>Nome:</strong> ${eleitor.nome}</p>
+                <p style="margin-bottom: 5px;"><strong>CPF:</strong> ${eleitor.cpf}</p>
+                <p style="margin-bottom: 5px;"><strong>Nascimento:</strong> ${dataNasc} (${eleitor.idade} anos)</p>
+                <p style="margin-bottom: 5px;"><strong>Local:</strong> ${eleitor.cidade} - ${eleitor.estado}</p>
+                <p style="margin-bottom: 5px;"><strong>Nacionalidade:</strong> ${eleitor.nacionalidade || 'Brasileira'}</p>
+
+                <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; margin-bottom: 10px;">⚙️ Sistema</h4>
+                <p style="margin-bottom: 5px;"><strong>Votou:</strong> ${eleitor.votou ? 'Sim' : 'Não'}</p>
+                <p style="margin-bottom: 5px;"><strong>Cadastro Ativo:</strong> ${eleitor.ativo !== false ? 'Sim' : 'Não'}</p>
+            `;
+            document.getElementById('conteudoDetalhes').innerHTML = html;
+            document.getElementById('modalDetalhes').style.display = 'flex';
+        }
+
+        function fecharModalDetalhes() {
+            document.getElementById('modalDetalhes').style.display = 'none';
+        }
+
+        // Restante das Funções
         function abrirModalInativar(id, nome) {
             document.getElementById('nomeInativar').textContent = nome;
             document.getElementById('formInativar').action = '/eleitores/' + id + '/inativar';
@@ -165,6 +210,7 @@
         window.addEventListener('click', function(e) {
             if (e.target === document.getElementById('modalInativar')) fecharModalInativar();
             if (e.target === document.getElementById('modalEditar'))  fecharModalEditar();
+            if (e.target === document.getElementById('modalDetalhes')) fecharModalDetalhes();
         });
     </script>
 </body>
