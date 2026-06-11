@@ -431,10 +431,13 @@ app.post("/cadastro_candidato", async (req, res) => {
             cidade,
             senha: hash
         });
+        
         await novoCandidato.save();
         res.send("<script>alert('Cadastro concluído! Faça login no portal para lançar sua candidatura.'); window.location.href = '/login';</script>");
     } catch (error) {
-        res.status(500).send("Erro ao cadastrar candidato.");
+        console.error("ERRO GRAVE AO CADASTRAR:", error);
+        // Agora o alerta vai te mostrar EXATAMENTE o que o banco recusou
+        res.send(`<script>alert("Erro ao cadastrar: ${error.message}"); window.history.back();</script>`);
     }
 });
 
