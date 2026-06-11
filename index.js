@@ -634,6 +634,68 @@ app.get("/admin", async (req, res) => {
     }
 });
 
+// Rota para listar os eleitores
+app.get("/consulta_eleitores", async (req, res) => {
+    try {
+        if (req.session.tipoAcesso !== 'Administrador') {
+            return res.redirect('/login');
+        }
+
+        const eleitores = await Eleitor.find({}).sort({ nome: 1 });
+        res.render("consulta_eleitores.ejs", { Eleitores: eleitores });
+    } catch (error) {
+        res.status(500).send("Erro ao carregar a lista de eleitores.");
+    }
+});
+
+// Rota para editar eleitor
+app.post("/eleitores/:id/editar", async (req, res) => {
+    try {
+        if (req.session.tipoAcesso !== 'Administrador') {
+            return res.redirect('/');
+        }
+
+        const { nome, dataNascimento, cidade, estado } = req.body;
+        
+        // Recalcular a idade baseada na nova data inserida
+        const hoje = new Date();
+        const nascimento = new Date(dataNascimento);
+        let idadeCalculada = hoje.getFullYear() - nascimento.getFullYear();
+        const m = hoje.getMonth() - nascimento.getMonth();
+        if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+            idadeCalculada--;
+        }
+
+        await Eleitor.findByIdAndUpdate(req.params.id, {
+            nome,
+            dataNascimento,
+            idade: idadeCalculada,
+            cidade,
+            estado
+        });
+
+        res.redirect("/consulta_eleitores");
+    } catch (error) {
+        res.status(500).send("Erro ao editar eleitor.");
+    }
+});
+
+// Rota para inativar/reativar eleitor
+app.post("/eleitores/:id/inativar", async (req, res) => {
+    try {
+        if (req.session.tipoAcesso !== 'Administrador') {
+            return res.redirect('/');
+        }
+
+        const eleitor = await Eleitor.findById(req.params.id);
+        await Eleitor.findByIdAndUpdate(req.params.id, { ativo: !eleitor.ativo });
+        
+        res.redirect("/consulta_eleitores");
+    } catch (error) {
+        res.status(500).send("Erro ao alterar status do eleitor.");
+    }
+});
+
 app.listen("3000", function () {
   console.log("Servidor rodando na porta 3000!");
 });
