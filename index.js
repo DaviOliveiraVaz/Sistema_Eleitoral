@@ -608,14 +608,16 @@ app.get("/consulta_candidatos", async (req, res) => {
             return res.redirect('/login');
         }
 
-        const candidatos = await Candidato.find({ cargo: { $exists: true, $ne: null } }).sort({ nome: 1 });
+        const candidatos = await Candidato.find({}).sort({ nome: 1 });
 
         const candidatosPorCargo = {};
         candidatos.forEach(candidato => {
-            if (!candidatosPorCargo[candidato.cargo]) {
-                candidatosPorCargo[candidato.cargo] = [];
+            const cargoAtual = candidato.cargo ? candidato.cargo : "Sem Cargo Definido";
+            
+            if (!candidatosPorCargo[cargoAtual]) {
+                candidatosPorCargo[cargoAtual] = [];
             }
-            candidatosPorCargo[candidato.cargo].push(candidato);
+            candidatosPorCargo[cargoAtual].push(candidato);
         });
 
         res.render("consulta_candidatos.ejs", { candidatosPorCargo });
@@ -672,17 +674,14 @@ app.get("/admin", async (req, res) => {
             return res.redirect('/login');
         }
 
-const docs = await Candidato.find({ 
-    status: "Pendente", 
-    cargo: { $exists: true, $ne: null } 
-});
+        const docs = await Candidato.find({});
         res.render("admin.ejs", { Candidatos: docs });
+        
     } catch (error) {
         res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
     }
 });
 
-// Rota para listar os eleitores
 app.get("/consulta_eleitores", async (req, res) => {
     try {
         if (req.session.tipoAcesso !== 'Administrador') {
@@ -696,7 +695,6 @@ app.get("/consulta_eleitores", async (req, res) => {
     }
 });
 
-// Rota para editar eleitor
 app.post("/eleitores/:id/editar", async (req, res) => {
     try {
         if (req.session.tipoAcesso !== 'Administrador') {
@@ -728,7 +726,6 @@ app.post("/eleitores/:id/editar", async (req, res) => {
     }
 });
 
-// Rota para inativar/reativar eleitor
 app.post("/eleitores/:id/inativar", async (req, res) => {
     try {
         if (req.session.tipoAcesso !== 'Administrador') {
