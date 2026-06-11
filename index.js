@@ -352,12 +352,23 @@ app.post("/cadastro_eleitor", async (req, res) => {
             `);
         }
 
+        // Cálculo exato da idade
         const hoje = new Date();
         const nascimento = new Date(dataNascimento);
         let idadedecalculo = hoje.getFullYear() - nascimento.getFullYear();
         const m = hoje.getMonth() - nascimento.getMonth();
         if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
             idadedecalculo--;
+        }
+
+        // REGRA DE NEGÓCIO: Idade mínima de 16 anos para eleitores
+        if (idadedecalculo < 16) {
+            return res.send(`
+                <script>
+                    alert('Cadastro não permitido! A idade mínima obrigatória ou facultativa para votar é de 16 anos completos.');
+                    window.history.back();
+                </script>
+            `);
         }
 
         const hash = await bcrypt.hash(senha, saltRounds);
@@ -484,11 +495,30 @@ app.post("/lancar_candidatura", async (req, res) => {
         const idUsuario = req.session.id_usuario;
         const { numero, cargo, partido, slogan, descricao } = req.body;
 
+        // 1. Busca os dados do candidato para verificar a idade
+        const candidato = await Candidato.findById(idUsuario);
+
+        // 2. Validação da Regra de Negócio (Idade Mínima)
+        let idadeMinima = 0;
+        if (cargo === "Presidente" || cargo === "Senador") {
+            idadeMinima = 35;
+        } else if (cargo === "Governador") {
+            idadeMinima = 30;
+        } else if (cargo === "Deputado Federal" || cargo === "Deputado Estadual") {
+            idadeMinima = 21;
+        }
+
+        if (candidato.idade < idadeMinima) {
+            return res.send(`<script>alert("Idade insuficiente! A Constituição exige a idade mínima de ${idadeMinima} anos para o cargo de ${cargo}. Sua idade atual é ${candidato.idade} anos."); window.history.back();</script>`);
+        }
+
+        // 3. Validação de Número Único
         const numeroEmUso = await Candidato.findOne({ numero: Number(numero), cargo: cargo });
         if (numeroEmUso) {
             return res.send(`<script>alert("Esse número já está registrado para este cargo!"); window.history.back();</script>`);
         }
 
+        // 4. Salva a Candidatura
         await Candidato.findByIdAndUpdate(idUsuario, {
             numero: Number(numero),
             cargo,

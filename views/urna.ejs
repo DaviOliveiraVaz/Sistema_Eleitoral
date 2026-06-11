@@ -6,12 +6,11 @@
     <title>Urna Eletrônica</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Ajustes finos de animação e alinhamento que não afetam a Navbar */
         .urna-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: calc(100vh - 80px); /* Desconta o tamanho da navbar */
+            min-height: calc(100vh - 80px);
             padding: 20px;
         }
 
@@ -58,27 +57,39 @@
         }
     </style>
 </head>
-<!-- Removida a classe 'urna-page' daqui para não bugar a Navbar -->
 <body>
     <%- include('navbar') %>
 
     <div class="urna-wrapper">
-        <!-- Classes originais do seu style.css -->
         <div class="urna-container">
             
             <!-- TELA DA URNA -->
             <div class="urna-tela">
-                <div id="tela-voto">
-                    <div class="tela-header">
-                        <span style="font-size: 1rem; font-weight: normal;">Seu voto para</span><br>
-                        <span id="cargo-nome" style="font-size: 1.5rem; margin-top: 5px; display: inline-block;">DEPUTADO ESTADUAL</span>
+                <!-- Flexbox inserido para separar dados (esquerda) e foto (direita) -->
+                <div id="tela-voto" style="display: flex; justify-content: space-between; height: 100%;">
+                    
+                    <div style="flex: 1;">
+                        <div class="tela-header">
+                            <span style="font-size: 1rem; font-weight: normal;">Seu voto para</span><br>
+                            <span id="cargo-nome" style="font-size: 1.5rem; margin-top: 5px; display: inline-block;">DEPUTADO ESTADUAL</span>
+                        </div>
+
+                        <div class="tela-numeros" id="tela-numeros">
+                            <!-- JS injeta os digitos aqui -->
+                        </div>
+
+                        <div id="info-candidato" class="info-candidato"></div>
                     </div>
 
-                    <div class="tela-numeros" id="tela-numeros">
-                        <!-- JS injeta os digitos aqui -->
+                    <!-- DIV DA FOTO (Fica oculta até achar um candidato) -->
+                    <div id="foto-candidato-container" style="display: none; flex-direction: column; align-items: center; margin-left: 15px;">
+                        <div style="width: 110px; height: 150px; border: 2px solid #333; background-color: #fff; padding: 2px; box-shadow: 2px 2px 0px rgba(0,0,0,0.2);">
+                            <!-- Avatar cinza padrão -->
+                            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" alt="Foto do Candidato" style="width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%);">
+                        </div>
+                        <span style="font-size: 0.7rem; margin-top: 5px; font-weight: bold; text-align: center;">FOTO PADRÃO</span>
                     </div>
 
-                    <div id="info-candidato" class="info-candidato"></div>
                 </div>
                 
                 <div id="tela-fim" class="tela-fim">FIM</div>
@@ -102,9 +113,9 @@
                     <button class="tecla" onclick="inserirNumero(7)">7</button>
                     <button class="tecla" onclick="inserirNumero(8)">8</button>
                     <button class="tecla" onclick="inserirNumero(9)">9</button>
-                    <div></div> <!-- Espaço vazio -->
+                    <div></div>
                     <button class="tecla" onclick="inserirNumero(0)">0</button>
-                    <div></div> <!-- Espaço vazio -->
+                    <div></div>
                 </div>
 
                 <div class="teclado-acoes">
@@ -131,7 +142,6 @@
         let isBranco = false;
         let votos = {};
         
-        // Recebe os candidatos do backend
         const candidatos = <%- JSON.stringify(Candidatos) %>;
 
         function atualizarTela() {
@@ -139,12 +149,15 @@
 
             const etapa = cargos[etapaAtual];
             document.getElementById("cargo-nome").innerText = etapa.nome.toUpperCase();
+            
             const containerNumeros = document.getElementById("tela-numeros");
             const info = document.getElementById("info-candidato");
+            const fotoContainer = document.getElementById("foto-candidato-container");
             
             containerNumeros.style.display = "flex";
             containerNumeros.innerHTML = "";
             info.innerHTML = "";
+            fotoContainer.style.display = "none"; // Sempre esconde a foto ao resetar a tela
 
             if (isBranco) {
                 containerNumeros.style.display = "none";
@@ -152,7 +165,6 @@
                 return;
             }
 
-            // Desenhar os quadradinhos
             for (let i = 0; i < etapa.digitos; i++) {
                 const div = document.createElement("div");
                 div.classList.add("digito");
@@ -160,13 +172,11 @@
                 if (votoAtual[i]) {
                     div.innerText = votoAtual[i];
                 } else if (i === votoAtual.length) {
-                    // Quadradinho atual piscando
                     div.classList.add("pisca");
                 }
                 containerNumeros.appendChild(div);
             }
 
-            // Buscar candidato se já digitou tudo
             if (votoAtual.length === etapa.digitos) {
                 const candidato = candidatos.find(c =>
                     c.numero == votoAtual &&
@@ -183,6 +193,8 @@
                             Local: ${candidato.cidade} - ${candidato.estado}
                         </span>
                     `;
+                    // Exibe a foto padrão quando encontra um candidato válido
+                    fotoContainer.style.display = "flex";
                 } else {
                     info.innerHTML = `<div style="font-size: 1.8rem; margin-top: 15px; animation: piscaLento 1.5s infinite;">NÚMERO ERRADO<br>VOTO NULO</div>`;
                 }
@@ -190,7 +202,7 @@
         }
 
         function inserirNumero(num) {
-            if (isBranco) return; // Não aceita número se tiver em branco
+            if (isBranco) return; 
             if (votoAtual.length < cargos[etapaAtual].digitos) {
                 votoAtual += num;
                 atualizarTela();
@@ -214,7 +226,6 @@
 
         function confirmarVoto() {
             const etapa = cargos[etapaAtual];
-            
             let votoConfirmado = null;
 
             if (isBranco) {
@@ -226,10 +237,8 @@
                 return;
             }
 
-            // Salva o voto
             votos[etapa.chave] = votoConfirmado;
             
-            // Passa para a próxima etapa
             etapaAtual++;
             votoAtual = "";
             isBranco = false;
@@ -250,7 +259,7 @@
 
             setTimeout(() => {
                 enviarVotos();
-            }, 2500); // Aguarda 2.5 segundos vendo o "FIM" antes de enviar
+            }, 2500); 
         }
 
         async function enviarVotos() {
@@ -270,7 +279,6 @@
             }
         }
 
-        // Inicia a primeira tela
         atualizarTela();
     </script>
 </body>
