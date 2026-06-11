@@ -9,7 +9,8 @@ const EleitorSchema = new Schema({
   cidade: { type: String, required: true },
   nacionalidade: { type: String, required: true, default: "Brasileira" },
   votou: { type: Boolean, default: false },
-  senha: { type: String, required: true }
+  senha: { type: String, required: true },
+  ativo: { type: Boolean, default: true }
 });
 
 module.exports = model("Eleitor", EleitorSchema, "Eleitores");

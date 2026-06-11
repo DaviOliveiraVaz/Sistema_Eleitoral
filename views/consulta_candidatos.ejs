@@ -38,7 +38,7 @@
                                         <div>
                                             <strong style="font-size: 1.2rem;"><%= candidato.nome %></strong><br>
                                             <span>Partido: <strong><%= candidato.partido %></strong></span><br>
-                                            <span>Município: <%= candidato.municipio %></span>
+                                            <span>Cidade/UF: <%= candidato.cidade %> - <%= candidato.estado %></span>
                                         </div>
                                         <div style="text-align: right;">
                                             <span style="font-size: 1.8rem; font-weight: bold; color: #2c3e50;"><%= candidato.numero %></span><br>
@@ -47,15 +47,15 @@
                                             <% if (tipoAcesso === 'Administrador') { %>
                                             <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
                                                 <button
-                                                    onclick="abrirModalEditar('<%= candidato._id %>', '<%= candidato.nome %>', '<%= candidato.partido %>', '<%= candidato.municipio %>', '<%= candidato.numero %>', '<%= candidato.status %>')"
-                                                    class="btn btn-primary" style="background-color: #f0a500; padding: 5px 12px; font-size: 0.85rem;">
-                                                    ✏️ Editar
-                                                </button>
+    onclick="abrirModalEditar('<%= candidato._id %>', '<%= candidato.nome %>', '<%= candidato.partido %>', '<%= candidato.cidade %>', '<%= candidato.estado %>', '<%= candidato.numero %>', '<%= candidato.status %>')"
+    class="btn btn-primary" style="background-color: #f0a500; padding: 5px 12px; font-size: 0.85rem;">
+    ✏️ Editar
+</button>
                                                 <button
-                                                    onclick="abrirModalExcluir('<%= candidato._id %>', '<%= candidato.nome %>')"
-                                                    class="btn btn-primary" style="background-color: #e74c3c; padding: 5px 12px; font-size: 0.85rem;">
-                                                    🗑️ Excluir
-                                                </button>
+    onclick="abrirModalInativar('<%= candidato._id %>', '<%= candidato.nome %>', <%= candidato.ativo %>)"
+    class="btn btn-primary" style="background-color: <%= candidato.ativo !== false ? '#e74c3c' : '#2ecc71' %>; padding: 5px 12px; font-size: 0.85rem;">
+    <%= candidato.ativo !== false ? '🚫 Inativar' : '✅ Reativar' %>
+</button>
                                             </div>
                                             <% } %>
                                         </div>
@@ -71,19 +71,18 @@
 
 
     <!-- MODAL EXCLUSÃO -->
-    <div id="modalExcluir" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
-        <div class="login-wrapper" style="max-width:420px; text-align:center;">
-            <h3 style="color:#e74c3c; margin-bottom:10px;">⚠️ Confirmar Exclusão</h3>
-            <p style="color:#555; margin-bottom:20px;">Tem certeza que deseja excluir o candidato <strong id="nomeExcluir"></strong>? Esta ação não pode ser desfeita.</p>
-            <div style="display:flex; gap:12px; justify-content:center;">
-                <button onclick="fecharModalExcluir()" class="btn btn-voltar">Cancelar</button>
-                <form id="formExcluir" method="POST" style="margin:0;">
-                    <button type="submit" class="btn btn-primary" style="background:#e74c3c;">Excluir</button>
-                </form>
-            </div>
+<div id="modalInativar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+    <div class="login-wrapper" style="max-width:420px; text-align:center;">
+        <h3 style="color:#e74c3c; margin-bottom:10px;">⚠️ Alterar Status do Cadastro</h3>
+        <p style="color:#555; margin-bottom:20px;">Deseja alterar o status de acesso de <strong id="nomeInativar"></strong>?</p>
+        <div style="display:flex; gap:12px; justify-content:center;">
+            <button onclick="fecharModalInativar()" class="btn btn-voltar">Cancelar</button>
+            <form id="formInativar" method="POST" style="margin:0;">
+                <button type="submit" class="btn btn-primary" style="background:#e74c3c;">Confirmar</button>
+            </form>
         </div>
     </div>
-
+</div>
     <!-- MODAL EDIÇÃO -->
     <div id="modalEditar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
         <div class="login-wrapper" style="max-width:500px;">
@@ -97,10 +96,20 @@
                     <label>Partido</label>
                     <input type="text" id="editPartido" name="partido" required>
                 </div>
-                <div class="form-group">
-                    <label>Município</label>
-                    <input type="text" id="editMunicipio" name="municipio" required>
-                </div>
+<div style="display: flex; gap: 10px;">
+    <div class="form-group" style="flex: 1;">
+        <label>Estado (UF)</label>
+        <select id="editEstado" name="estado" required style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;">
+            <option value="" disabled>Selecione</option>
+        </select>
+    </div>
+    <div class="form-group" style="flex: 2;">
+        <label>Cidade</label>
+        <select id="editCidade" name="cidade" required style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;">
+            <option value="" disabled>Selecione o estado primeiro</option>
+        </select>
+    </div>
+</div>
                 <div class="form-group">
                     <label>Número</label>
                     <input type="text" id="editNumero" name="numero" required>
@@ -121,41 +130,80 @@
         </div>
     </div>
 
-    <script>
-        function filtrarCandidatos() {
-            const valorSelecionado = document.getElementById('filtroCargo').value;
-            const grupos = document.querySelectorAll('.grupo-cargo');
-            grupos.forEach(grupo => {
-                grupo.style.display = (valorSelecionado === 'Todos' || grupo.id === 'grupo-' + valorSelecionado) ? 'block' : 'none';
-            });
-        }
-
-        function abrirModalExcluir(id, nome) {
-            document.getElementById('nomeExcluir').textContent = nome;
-            document.getElementById('formExcluir').action = '/candidatos/' + id + '/excluir';
-            document.getElementById('modalExcluir').style.display = 'flex';
-        }
-        function fecharModalExcluir() {
-            document.getElementById('modalExcluir').style.display = 'none';
-        }
-
-        function abrirModalEditar(id, nome, partido, municipio, numero, status) {
-            document.getElementById('editNome').value = nome;
-            document.getElementById('editPartido').value = partido;
-            document.getElementById('editMunicipio').value = municipio;
-            document.getElementById('editNumero').value = numero;
-            document.getElementById('editStatus').value = status;
-            document.getElementById('formEditar').action = '/candidatos/' + id + '/editar';
-            document.getElementById('modalEditar').style.display = 'flex';
-        }
-        function fecharModalEditar() {
-            document.getElementById('modalEditar').style.display = 'none';
-        }
-
-        window.addEventListener('click', function(e) {
-            if (e.target === document.getElementById('modalExcluir')) fecharModalExcluir();
-            if (e.target === document.getElementById('modalEditar'))  fecharModalEditar();
+ <script>
+    function filtrarCandidatos() {
+        const valorSelecionado = document.getElementById('filtroCargo').value;
+        const grupos = document.querySelectorAll('.grupo-cargo');
+        grupos.forEach(grupo => {
+            grupo.style.display = (valorSelecionado === 'Todos' || grupo.id === 'grupo-' + valorSelecionado) ? 'block' : 'none';
         });
-    </script>
+    }
+
+    function abrirModalInativar(id, nome) {
+    document.getElementById('nomeInativar').textContent = nome;
+    document.getElementById('formInativar').action = '/candidatos/' + id + '/inativar';
+    document.getElementById('modalInativar').style.display = 'flex';
+}
+function fecharModalInativar() {
+    document.getElementById('modalInativar').style.display = 'none';
+}
+
+    const editEstadoSelect = document.getElementById('editEstado');
+    const editCidadeSelect = document.getElementById('editCidade');
+
+    fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
+        .then(res => res.json())
+        .then(estados => {
+            estados.forEach(estado => {
+                editEstadoSelect.innerHTML += `<option value="${estado.sigla}">${estado.nome}</option>`;
+            });
+        })
+        .catch(erro => console.error(erro));
+
+    function carregarCidadesEdit(uf, cidadeSelecionada) {
+        editCidadeSelect.innerHTML = '<option value="">Carregando...</option>';
+        editCidadeSelect.disabled = true;
+
+        if (!uf) return;
+
+        fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+            .then(res => res.json())
+            .then(cidades => {
+                editCidadeSelect.innerHTML = '<option value="" disabled>Selecione a cidade</option>';
+                cidades.forEach(cidade => {
+                    const selected = (cidade.nome === cidadeSelecionada) ? 'selected' : '';
+                    editCidadeSelect.innerHTML += `<option value="${cidade.nome}" ${selected}>${cidade.nome}</option>`;
+                });
+                editCidadeSelect.disabled = false;
+            })
+            .catch(erro => console.error(erro));
+    }
+
+    editEstadoSelect.addEventListener('change', () => {
+        carregarCidadesEdit(editEstadoSelect.value, '');
+    });
+
+    function abrirModalEditar(id, nome, partido, cidade, estado, numero, status) {
+        document.getElementById('editNome').value = nome;
+        document.getElementById('editPartido').value = partido;
+        document.getElementById('editNumero').value = numero;
+        document.getElementById('editStatus').value = status;
+        document.getElementById('formEditar').action = '/candidatos/' + id + '/editar';
+        
+        editEstadoSelect.value = estado;
+        carregarCidadesEdit(estado, cidade);
+
+        document.getElementById('modalEditar').style.display = 'flex';
+    }
+
+    function fecharModalEditar() {
+        document.getElementById('modalEditar').style.display = 'none';
+    }
+
+    window.addEventListener('click', function(e) {
+        if (e.target === document.getElementById('modalExcluir')) fecharModalExcluir();
+        if (e.target === document.getElementById('modalEditar'))  fecharModalEditar();
+    });
+</script>
 </body>
 </html>
