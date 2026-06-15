@@ -55,7 +55,7 @@
                                             <% if (tipoAcesso === 'Administrador') { %>
                                             <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end;">
                                                 <button
-                                                    onclick="event.stopPropagation(); abrirModalEditar('<%= candidato._id %>', '<%= candidato.nome %>', '<%= candidato.partido || '' %>', '<%= candidato.cidade %>', '<%= candidato.estado %>', '<%= candidato.numero || '' %>', '<%= candidato.status %>')"
+                                                    onclick="event.stopPropagation(); abrirModalEditar('<%= candidato._id %>', '<%= candidato.nome %>', '<%= candidato.partido || '' %>', '<%= candidato.cidade %>', '<%= candidato.estado %>', '<%= candidato.numero || '' %>', '<%= candidato.status %>', '<%= candidato.sexo || '' %>')"
                                                     class="btn btn-primary" style="background-color: #f0a500; padding: 5px 12px; font-size: 0.85rem;">
                                                     ✏️ Editar
                                                 </button>
@@ -82,7 +82,7 @@
             <button onclick="fecharModalDetalhes()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #555;">&times;</button>
             <header class="login-header" style="margin-bottom: 10px;"><h2 style="margin-bottom: 0;">📋 Perfil Completo</h2></header>
             <div id="conteudoDetalhes" style="padding: 10px 20px 20px; text-align: left; line-height: 1.6; color: #333;">
-                </div>
+            </div>
         </div>
     </div>
 
@@ -110,6 +110,14 @@
                 <div class="form-group">
                     <label>Partido</label>
                     <input type="text" id="editPartido" name="partido">
+                </div>
+                <div class="form-group">
+                    <label>Sexo</label>
+                    <select id="editSexo" name="sexo" required style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc;">
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
+                        <option value="Outro">Outro</option>
+                    </select>
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <div class="form-group" style="flex: 1;">
@@ -155,7 +163,6 @@
             });
         }
 
-        // Funções do Modal de Detalhes Completo
         function abrirModalDetalhesCandidato(elemento) {
             const candidato = JSON.parse(decodeURIComponent(elemento.getAttribute('data-candidato')));
             const dataNasc = candidato.dataNascimento ? candidato.dataNascimento.split('T')[0].split('-').reverse().join('/') : 'Não informada';
@@ -165,6 +172,7 @@
                 <p style="margin-bottom: 5px;"><strong>Nome:</strong> ${candidato.nome}</p>
                 <p style="margin-bottom: 5px;"><strong>CPF:</strong> ${candidato.cpf}</p>
                 <p style="margin-bottom: 5px;"><strong>Nascimento:</strong> ${dataNasc} (${candidato.idade} anos)</p>
+                <p style="margin-bottom: 5px;"><strong>Sexo:</strong> ${candidato.sexo || 'Não informado'}</p>
                 <p style="margin-bottom: 5px;"><strong>Local:</strong> ${candidato.cidade} - ${candidato.estado}</p>
                 <p style="margin-bottom: 5px;"><strong>Nacionalidade:</strong> ${candidato.nacionalidade || 'Brasileira'}</p>
 
@@ -189,7 +197,6 @@
             document.getElementById('modalDetalhes').style.display = 'none';
         }
 
-        // Funções de Inativar
         function abrirModalInativar(id, nome) {
             document.getElementById('nomeInativar').textContent = nome;
             document.getElementById('formInativar').action = '/candidatos/' + id + '/inativar';
@@ -200,7 +207,6 @@
             document.getElementById('modalInativar').style.display = 'none';
         }
 
-        // Lógica de Endereço e Edição
         const editEstadoSelect = document.getElementById('editEstado');
         const editCidadeSelect = document.getElementById('editCidade');
 
@@ -236,11 +242,12 @@
             carregarCidadesEdit(editEstadoSelect.value, '');
         });
 
-        function abrirModalEditar(id, nome, partido, cidade, estado, numero, status) {
+        function abrirModalEditar(id, nome, partido, cidade, estado, numero, status, sexo) {
             document.getElementById('editNome').value = nome;
             document.getElementById('editPartido').value = partido;
             document.getElementById('editNumero').value = numero;
             document.getElementById('editStatus').value = status;
+            document.getElementById('editSexo').value = sexo;
             document.getElementById('formEditar').action = '/candidatos/' + id + '/editar';
             
             editEstadoSelect.value = estado;
