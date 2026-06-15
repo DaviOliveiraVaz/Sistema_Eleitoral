@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby de Votação - Escolha a Eleição</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+    <div class="login-wrapper">
+        <header class="login-header">
+            <h1>Lobby de Votação</h1>
+            <p>Selecione o tipo de pleito que deseja acessar na Urna Eletrônica</p>
+        </header>
+        
+        <div class="login-options">
+            <a href="/urna?tipo=geral" class="login-card">
+                <div class="card-icon">🇧🇷</div>
+                <h3>Eleição Geral</h3>
+                <p>Votação para Deputados, Senadores, Governador e Presidente</p>
+            </a>
+
+            <a href="/urna?tipo=municipal" class="login-card">
+                <div class="card-icon">🏙️</div>
+                <h3>Eleição Municipal</h3>
+                <p>Votação para Vereadores e Prefeito da sua localidade</p>
+            </a>
+        </div>
+
+        <footer class="login-footer">
+            <button class="btn btn-voltar" onclick="window.history.back()">⬅ Voltar para o Painel</button>
+        </footer>
+    </div>
+</body>
+</html>
