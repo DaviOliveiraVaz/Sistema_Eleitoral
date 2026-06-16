@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Eleição</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('navbar') %>
+
+    <div class="container">
+        <div class="login-wrapper" style="max-width:520px; margin:40px auto;">
+            <div class="login-header">
+                <h1>🗳️ Nova Eleição</h1>
+                <p>Preencha os dados para criar uma nova eleição</p>
+            </div>
+
+            <form method="POST" action="/eleicoes/nova" style="padding:30px;">
+                <div class="form-group">
+                    <label for="nome">Nome da Eleição</label>
+                    <input type="text" id="nome" name="nome" placeholder="Ex: Eleição Municipal 2026" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo">Tipo de Eleição</label>
+                    <select id="tipo" name="tipo" required
+                            style="width:100%; padding:10px; border-radius:4px; border:1px solid #ccc; font-size:1rem;">
+                        <option value="" disabled selected>Selecione o tipo...</option>
+                        <option value="Geral">Geral</option>
+                        <option value="Municipal">Municipal</option>
+                    </select>
+                    <p id="tipo-info" style="font-size:0.82rem; color:#7f8c8d; margin-top:6px;"></p>
+                </div>
+
+                <div style="display:flex; gap:12px; margin-top:10px;">
+                    <a href="/eleicoes" class="btn btn-voltar" style="flex:1; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center;">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        Salvar Eleição
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const select = document.getElementById('tipo');
+        const info   = document.getElementById('tipo-info');
+        const descricoes = {
+            'Geral':     'Cargos: Presidente, Governador, Senador, Deputado Federal e Estadual.',
+            'Municipal': 'Cargos: Prefeito e Vereador. Filtragem por cidade do eleitor.'
+        };
+        select.addEventListener('change', function() {
+            info.textContent = descricoes[this.value] || '';
+        });
+    </script>
+</body>
+</html>

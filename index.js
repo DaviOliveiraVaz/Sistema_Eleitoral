@@ -12,6 +12,7 @@ const Eleitor = require("./model/Eleitor");
 const Candidato = require("./model/Candidato");
 const Administrador = require("./model/Administrador");
 const Voto = require("./model/Voto");
+const Eleicao = require("./model/Eleicao");
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -183,12 +184,37 @@ app.get("/urna", async function (req, res) {
             `);
         }
 
-        // A urna só carrega candidatos homologados E ativos
-const docs = await Candidato.find({ 
-    status: "Homologado", 
-    ativo: true 
-});
-        res.render("urna.ejs", { Candidatos: docs });
+        // Busca a eleição ativa para determinar o tipo (Geral ou Municipal)
+        const eleicaoAtiva = await Eleicao.findOne({ ativa: true });
+
+        if (!eleicaoAtiva) {
+            return res.send(`
+                <script>
+                    alert("Nenhuma eleição ativa no momento.");
+                    window.location.href = "${res.locals.linkHome}";
+                </script>
+            `);
+        }
+
+        const tipoEleicao = eleicaoAtiva.tipo; // "Geral" ou "Municipal"
+        const estadoEleitor = usuarioVotante.estado;
+        const cidadeEleitor = usuarioVotante.cidade;
+
+        // Filtro base: apenas homologados e ativos
+        const filtro = { status: "Homologado", ativo: true };
+
+        if (tipoEleicao === "Municipal") {
+            // Eleição municipal: candidatos da mesma cidade do eleitor, cargos municipais
+            filtro.cidade = cidadeEleitor;
+            filtro.cargo = { $in: ["Prefeito", "Vereador"] };
+        } else {
+            // Eleição geral: candidatos do mesmo estado do eleitor, cargos federais/estaduais
+            filtro.estado = estadoEleitor;
+            filtro.cargo = { $in: ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual"] };
+        }
+
+        const docs = await Candidato.find(filtro);
+        res.render("urna.ejs", { Candidatos: docs, tipoEleicao });
 
     } catch (error) {
         console.error("Erro: ", error);
@@ -226,21 +252,33 @@ app.post("/votar", async (req, res) => {
             return res.status(400).json({ message: "Você já votou." });
         }
 
-        const { deputadoEstadual, deputadoFederal, senador, governador, presidente } = req.body;
+        const cargosGeral = {
+            deputadoEstadual: "Deputado Estadual",
+            deputadoFederal: "Deputado Federal",
+            senador: "Senador",
+            governador: "Governador",
+            presidente: "Presidente"
+        };
+
+        const cargosMunicipal = {
+            vereador: "Vereador",
+            prefeito: "Prefeito"
+        };
+
+        // Detecta o tipo pelo body recebido da urna
+        const isMunicipal = req.body.vereador !== undefined || req.body.prefeito !== undefined;
+        const mapaCargos = isMunicipal ? cargosMunicipal : cargosGeral;
 
         async function validarCandidato(numero, cargo) {
             if (!numero) return null;
-            const candidato = await Candidato.findOne({ numero, cargo, status: "Homologado" });
+            const candidato = await Candidato.findOne({ numero: Number(numero), cargo, status: "Homologado" });
             return candidato ? candidato._id : null;
         }
 
-        const voto = {
-            deputadoEstadual: await validarCandidato(deputadoEstadual, "Deputado Estadual"),
-            deputadoFederal: await validarCandidato(deputadoFederal, "Deputado Federal"),
-            senador: await validarCandidato(senador, "Senador"),
-            governador: await validarCandidato(governador, "Governador"),
-            presidente: await validarCandidato(presidente, "Presidente")
-        };
+        const voto = {};
+        for (const [chave, nomeCargo] of Object.entries(mapaCargos)) {
+            voto[chave] = await validarCandidato(req.body[chave], nomeCargo);
+        }
 
         await Voto.create({
             votos: voto
@@ -743,4 +781,52 @@ app.post("/eleitores/:id/inativar", async (req, res) => {
 
 app.listen("3000", function () {
   console.log("Servidor rodando na porta 3000!");
+});
+
+// ===== ELEICOES =====
+app.get("/eleicoes", async(req,res)=>{
+ const eleicoes = await Eleicao.find();
+ res.render("eleicoes.ejs",{eleicoes});
+});
+
+app.get("/eleicoes/nova",(req,res)=>{
+ res.render("nova_eleicao.ejs");
+});
+
+app.post("/eleicoes/nova", async(req,res)=>{
+ await Eleicao.create({
+   nome:req.body.nome,
+   tipo:req.body.tipo
+ });
+ res.redirect("/eleicoes");
+});
+
+app.get("/eleicoes/editar/:id", async(req,res)=>{
+ const eleicao = await Eleicao.findById(req.params.id);
+ if (!eleicao) return res.redirect("/eleicoes");
+ res.render("editar_eleicao.ejs", { eleicao });
+});
+
+app.post("/eleicoes/editar/:id", async(req,res)=>{
+ await Eleicao.findByIdAndUpdate(req.params.id, {
+   nome: req.body.nome,
+   tipo: req.body.tipo
+ });
+ res.redirect("/eleicoes?editada=1&nome=" + encodeURIComponent(req.body.nome));
+});
+
+app.post("/eleicoes/excluir/:id", async(req,res)=>{
+ const eleicao = await Eleicao.findById(req.params.id);
+ if (eleicao && eleicao.ativa) {
+   return res.redirect("/eleicoes?erro=ativa");
+ }
+ await Eleicao.findByIdAndDelete(req.params.id);
+ res.redirect("/eleicoes?excluida=1");
+});
+
+app.get("/eleicoes/ativar/:id", async(req,res)=>{
+ await Eleicao.updateMany({},{$set:{ativa:false}});
+ const eleicao = await Eleicao.findByIdAndUpdate(req.params.id,{ativa:true},{new:true});
+ const nome = eleicao ? encodeURIComponent(eleicao.nome) : '';
+ res.redirect(`/eleicoes?ativada=1&nome=${nome}`);
 });

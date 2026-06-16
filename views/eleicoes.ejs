@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eleições</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .row-ativa { background-color: #eafaf1 !important; }
+        .dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .dot-ativa  { background-color: #27ae60; animation: pulso 1.5s infinite; }
+        .dot-inativa { background-color: #bdc3c7; }
+        @keyframes pulso {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%      { opacity:.4; transform:scale(1.4); }
+        }
+        .badge-tipo {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .badge-geral     { background:#eaf4fb; color:#1a6fa8; border:1px solid #aed6f1; }
+        .badge-municipal { background:#fef9e7; color:#b7950b; border:1px solid #f9e79f; }
+        #toast {
+            display: none;
+            position: fixed;
+            bottom: 28px; right: 28px;
+            padding: 13px 22px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            z-index: 9999;
+            animation: entrar .3s ease;
+        }
+        @keyframes entrar {
+            from { opacity:0; transform:translateY(16px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <%- include('navbar') %>
+
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0;">🗳️ Eleições</h2>
+            <a href="/eleicoes/nova" class="btn btn-primary">＋ Nova Eleição</a>
+        </div>
+
+        <% if (eleicoes.length === 0) { %>
+            <div style="text-align:center; padding:50px; color:#7f8c8d;">
+                <p style="font-size:1.1rem;">Nenhuma eleição cadastrada ainda.</p>
+                <a href="/eleicoes/nova" class="btn btn-primary" style="margin-top:16px;">＋ Criar primeira eleição</a>
+            </div>
+        <% } else { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% eleicoes.forEach(function(e) { %>
+                <tr class="<%= e.ativa ? 'row-ativa' : '' %>">
+                    <td><strong><%= e.nome %></strong></td>
+                    <td>
+                        <span class="badge-tipo <%= e.tipo === 'Municipal' ? 'badge-municipal' : 'badge-geral' %>">
+                            <%= e.tipo %>
+                        </span>
+                    </td>
+                    <td>
+                        <% if (e.ativa) { %>
+                            <span class="status-aprovado">
+                                <span class="dot dot-ativa"></span>Ativa
+                            </span>
+                        <% } else { %>
+                            <span style="color:#95a5a6;">
+                                <span class="dot dot-inativa"></span>Inativa
+                            </span>
+                        <% } %>
+                    </td>
+                    <td>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                            <% if (!e.ativa) { %>
+                                <a href="/eleicoes/ativar/<%= e._id %>"
+                                   class="btn btn-primary"
+                                   style="background:#27ae60; padding:6px 14px; font-size:0.85rem;"
+                                   onclick="confirmarAtivacao(event, '<%= e.nome %>')">
+                                    ▶ Ativar
+                                </a>
+                            <% } else { %>
+                                <span class="btn" style="background:#d5f5e3; color:#1e8449; cursor:default; padding:6px 14px; font-size:0.85rem;">
+                                    ✓ Em execução
+                                </span>
+                            <% } %>
+                            <a href="/eleicoes/editar/<%= e._id %>"
+                               class="btn btn-primary"
+                               style="background:#f0a500; padding:6px 14px; font-size:0.85rem;">
+                                ✏️ Editar
+                            </a>
+                            <form method="POST" action="/eleicoes/excluir/<%= e._id %>" style="margin:0;"
+                                  onsubmit="return confirmarExclusao('<%= e.nome %>')">
+                                <button type="submit" class="btn btn-primary"
+                                        style="background:#e74c3c; padding:6px 14px; font-size:0.85rem;">
+                                    🗑️ Excluir
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        <% } %>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const toast  = document.getElementById('toast');
+        const nome   = decodeURIComponent(params.get('nome') || '');
+
+        function mostrarToast(msg, cor) {
+            toast.textContent = msg;
+            toast.style.backgroundColor = cor || '#27ae60';
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 4000);
+            history.replaceState({}, '', '/eleicoes');
+        }
+
+        if      (params.get('ativada')  === '1')    mostrarToast('✅ "' + nome + '" foi ativada!');
+        else if (params.get('editada')  === '1')    mostrarToast('✏️ "' + nome + '" foi atualizada!', '#3498db');
+        else if (params.get('excluida') === '1')    mostrarToast('🗑️ Eleição excluída.', '#7f8c8d');
+        else if (params.get('erro')     === 'ativa') mostrarToast('⚠️ Não é possível excluir uma eleição ativa.', '#e67e22');
+
+        function confirmarAtivacao(event, nome) {
+            if (!confirm('Deseja ativar a eleição "' + nome + '"?\n\nIsso desativará qualquer eleição em andamento.'))
+                event.preventDefault();
+        }
+
+        function confirmarExclusao(nome) {
+            return confirm('Deseja excluir a eleição "' + nome + '"?\n\nEsta ação não pode ser desfeita.');
+        }
+    </script>
+</body>
+</html>
