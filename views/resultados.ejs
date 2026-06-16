@@ -4,40 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultados da Eleição</title>
+    <!-- Caminho do CSS corrigido (do main) -->
     <link rel="stylesheet" href="/style.css">
+    <!-- Biblioteca PDF mantida (do branch rogerio) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <%- include('navbar') %>
 
     <div class="container">
         <div class="view active">
-            <h2>Resultados Parciais</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Resultados Parciais</h2>
+                <button class="btn btn-primary" onclick="gerarPDF()" style="padding: 10px 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório em PDF</button>
+            </div>
 
-            <% for (let cargo in resultadosPorCargo) { %>
-                <% const candidatosDoCargo = resultadosPorCargo[cargo]; %>
-                <% if (candidatosDoCargo.length > 0) { %>
-                    <h3 class="section-title" style="color: #3498db; border-color: #3498db;"><%= cargo %></h3>
+            <div id="conteudo-relatorio" style="padding: 10px; background: #fff; border-radius: 8px;">
+                <div class="comprovante-header" style="text-align: center; margin-bottom: 20px; display: none;" id="pdf-header">
+                    <h3>TRIBUNAL REGIONAL ELEITORAL</h3>
+                    <p>Relatório Oficial de Apuração dos Votos</p>
+                    <hr>
+                </div>
 
-                    <div class="instructions-container">
-                        <div class="instruction-item" style="text-align: left;">
-                            <h4>Ranking</h4>
-                            <ul style="list-style: none; padding: 0; line-height: 2;">
-                                <% candidatosDoCargo.forEach((candidato, index) => { %>
-                                    <li>
-                                        <strong><%= index + 1 %>º</strong> - 
-                                        <%= candidato.nome %> (<%= candidato.numero %>) - 
-                                        <strong class="status-aprovado"><%= candidato.votos %> votos</strong>
-                                    </li>
-                                <% }) %>
-                            </ul>
+                <% for (let cargo in resultadosPorCargo) { %>
+                    <% const candidatosDoCargo = resultadosPorCargo[cargo]; %>
+                    <% if (candidatosDoCargo.length > 0) { %>
+                        <h3 class="section-title" style="color: #3498db; border-color: #3498db;"><%= cargo %></h3>
+
+                        <div class="instructions-container">
+                            <div class="instruction-item" style="text-align: left;">
+                                <h4>Ranking</h4>
+                                <ul style="list-style: none; padding: 0; line-height: 2;">
+                                    <% candidatosDoCargo.forEach((candidato, index) => { %>
+                                        <li>
+                                            <strong><%= index + 1 %>º</strong> - 
+                                            <%= candidato.nome %> (<%= candidato.numero %>) - 
+                                            <strong class="status-aprovado"><%= candidato.votos %> votos</strong>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                            </div>
+
+                            <div class="instruction-item" style="display: flex; justify-content: center; background-color: #fff;">
+                                <canvas id="grafico-<%= cargo.replace(/\s/g, '') %>" width="250" height="250"></canvas>
+                            </div>
                         </div>
-
-                        <div class="instruction-item" style="display: flex; justify-content: center; background-color: #fff;">
-                            <canvas id="grafico-<%= cargo.replace(/\s/g, '') %>" width="250" height="250"></canvas>
-                        </div>
-                    </div>
+                    <% } %>
                 <% } %>
-            <% } %>
+            </div>
         </div>
     </div>
 
@@ -63,6 +77,24 @@
                     options: { responsive: false }
                 });
             }
+        }
+
+        function gerarPDF() {
+            const header = document.getElementById('pdf-header');
+            header.style.display = 'block';
+
+            const elemento = document.getElementById('conteudo-relatorio');
+            const opcoes = {
+                margin: 10,
+                filename: 'Apuracao_Eleicoes_2026.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opcoes).from(elemento).save().then(() => {
+                header.style.display = 'none';
+            });
         }
     </script>
 </body>
