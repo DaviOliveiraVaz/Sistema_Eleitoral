@@ -579,3 +579,7 @@ body.home-page {
 .navbar-sair:hover {
     background-color: #e74c3c !important;
 }
+
+a.btn {
+    text-decoration: none;
+}

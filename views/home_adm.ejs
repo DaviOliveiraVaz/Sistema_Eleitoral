@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Home - Admin</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <%- include('navbar') %>
@@ -12,7 +12,7 @@
         <h1>Painel Administrativo</h1>
         <p>Gerencie as solicitações de candidatura e acompanhe o sistema.</p>
 
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; max-width: 700px;">
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-top: 30px; max-width: 700px;">
             <a href="/admin" class="login-card" style="text-decoration:none;">
                 <div class="card-icon">✅</div>
                 <h3>Homologação</h3>
@@ -27,6 +27,11 @@
                 <div class="card-icon">🔍</div>
                 <h3>Gerenciar Eleitores</h3>
                 <p>Editar e inativar candidatos</p>
+            </a>
+            <a href="/eleicoes" class="login-card" style="text-decoration:none;">
+                <div class="card-icon">📅</div>
+                <h3>Gerenciar Eleições</h3>
+                <p>Cadastrar e gerenciar eleições</p>
             </a>
             <a href="/resultados" class="login-card" style="text-decoration:none;">
                 <div class="card-icon">📊</div>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Urna Eletrônica</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
     <style>
         .urna-wrapper {
             display: flex;
@@ -129,13 +129,20 @@
     </div>
 
     <script>
-        const cargos = [
-            { nome: "Deputado Estadual", chave: "deputadoEstadual", digitos: 5 },
-            { nome: "Deputado Federal", chave: "deputadoFederal", digitos: 4 },
-            { nome: "Senador", chave: "senador", digitos: 3 },
-            { nome: "Governador", chave: "governador", digitos: 2 },
-            { nome: "Presidente", chave: "presidente", digitos: 2 }
-        ];
+        const tipoEleicao = "<%- tipoEleicao %>";
+
+        const cargos = tipoEleicao === "Municipal"
+            ? [
+                { nome: "Vereador",  chave: "vereador",  digitos: 5 },
+                { nome: "Prefeito",  chave: "prefeito",  digitos: 2 }
+              ]
+            : [
+                { nome: "Deputado Estadual", chave: "deputadoEstadual", digitos: 5 },
+                { nome: "Deputado Federal",  chave: "deputadoFederal",  digitos: 4 },
+                { nome: "Senador",           chave: "senador",           digitos: 3 },
+                { nome: "Governador",        chave: "governador",        digitos: 2 },
+                { nome: "Presidente",        chave: "presidente",        digitos: 2 }
+              ];
 
         let etapaAtual = 0;
         let votoAtual = "";

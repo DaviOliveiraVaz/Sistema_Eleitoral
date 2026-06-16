@@ -6,7 +6,7 @@ const CandidatoSchema = new Schema({
   numero: { type: Number, unique: true, sparse: true }, 
   cargo: { 
     type: String, 
-    enum: ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual"]
+    enum: ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual", "Prefeito", "Vereador"]
   },
   partido: { type: String },
   dataNascimento: { type: Date, required: true },
