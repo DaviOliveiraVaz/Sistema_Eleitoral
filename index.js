@@ -377,7 +377,7 @@ app.get("/cadastro_eleitor", function (req, res) {
 
 app.post("/cadastro_eleitor", async (req, res) => {
     try {
-        const { nome, cpf, dataNascimento, estado, cidade, senha } = req.body;
+        const { nome, cpf, dataNascimento, estado, cidade, sexo, zona, secao, senha } = req.body;
 
         const eleitorExistente = await Eleitor.findOne({ cpf: cpf });
         
@@ -418,6 +418,9 @@ app.post("/cadastro_eleitor", async (req, res) => {
             idade: idadedecalculo,
             estado,
             cidade,
+            sexo,
+            zona,
+            secao,
             senha: hash
         });
 
@@ -444,7 +447,7 @@ app.get("/cadastro_candidato", function (req, res) {
 
 app.post("/cadastro_candidato", async (req, res) => {
     try {
-        const { nome, cpf, dataNascimento, estado, cidade, senha } = req.body;
+        const { nome, cpf, dataNascimento, estado, cidade, sexo, senha } = req.body;
         const existente = await Candidato.findOne({ $or: [{ cpf }] });
         if (existente) {
             return res.send("<script>alert('CPF já cadastrado!'); window.history.back();</script>");
@@ -467,6 +470,7 @@ app.post("/cadastro_candidato", async (req, res) => {
             idade: idadedecalculo,
             estado,
             cidade,
+            sexo,
             senha: hash
         });
         
@@ -547,6 +551,10 @@ app.post("/lancar_candidatura", async (req, res) => {
             idadeMinima = 30;
         } else if (cargo === "Deputado Federal" || cargo === "Deputado Estadual") {
             idadeMinima = 21;
+        } else if (cargo === "Prefeito") {
+            idadeMinima = 21;
+        } else if (cargo === "Vereador") {
+            idadeMinima = 18;
         }
 
         if (candidato.idade < idadeMinima) {
@@ -604,29 +612,39 @@ app.post("/perfil/editar", async (req, res) => {
     try {
         const idUsuario = req.session.id_usuario;
         const tipoAcesso = req.session.tipoAcesso;
-        const { nome, dataNascimento, estado, cidade } = req.body;
+        const { nome, dataNascimento, estado, cidade, sexo } = req.body;
 
         if (!idUsuario || tipoAcesso === 'Administrador') {
             return res.redirect("/login");
         }
 
+        let Modelo = tipoAcesso === 'Eleitor' ? Eleitor : Candidato;
+
+        const usuarioAtual = await Modelo.findById(idUsuario);
+        if (!usuarioAtual) {
+            return res.redirect("/login");
+        }
+
+        const dataNascimentoFinal = dataNascimento || usuarioAtual.dataNascimento;
+
         const hoje = new Date();
-        const nascimento = new Date(dataNascimento);
+        const nascimento = new Date(dataNascimentoFinal);
         let idadedecalculo = hoje.getFullYear() - nascimento.getFullYear();
         const m = hoje.getMonth() - nascimento.getMonth();
         if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
             idadedecalculo--;
         }
 
-        let Modelo = tipoAcesso === 'Eleitor' ? Eleitor : Candidato;
-
-        await Modelo.findByIdAndUpdate(idUsuario, {
+        const dadosAtualizados = {
             nome,
-            dataNascimento,
+            dataNascimento: dataNascimentoFinal,
             idade: idadedecalculo,
-            estado,
-            cidade
-        });
+            estado: estado || usuarioAtual.estado,
+            cidade: cidade || usuarioAtual.cidade,
+            sexo
+        };
+
+        await Modelo.findByIdAndUpdate(idUsuario, dadosAtualizados);
 
         res.send(`
             <script>

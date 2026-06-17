@@ -13,6 +13,7 @@ const CandidatoSchema = new Schema({
   idade: { type: Number, required: true },
   estado: { type: String, required: true },
   cidade: { type: String, required: true },
+  sexo: { type: String, required: true, enum: ["Masculino", "Feminino"] },
   nacionalidade: { type: String, required: true, default: "Brasileira" },
   slogan: { type: String },
   descricao: { type: String }, 
