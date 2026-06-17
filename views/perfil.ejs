@@ -18,12 +18,12 @@
             <form action="/perfil/editar" method="POST" style="padding: 30px;">
                 <div class="form-group">
                     <label>Nome Completo</label>
-                    <input type="text" name="nome" value="<%= usuario.nome %>" required>
+                    <input type="text" name="nome" value="<%= usuario.nome %>" required disabled>
                 </div>
 
                 <div style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex: 1;">
-                        <label>CPF (Apenas Leitura)</label>
+                        <label>CPF</label>
                         <input type="text" value="<%= usuario.cpf %>" disabled style="background-color: #eee;">
                     </div>
                     <div class="form-group" style="flex: 1;">
@@ -35,26 +35,47 @@
                                 dataFormatada = d.toISOString().split('T')[0];
                             }
                         %>
-                        <input type="date" name="dataNascimento" value="<%= dataFormatada %>" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="date" name="dataNascimento" value="<%= dataFormatada %>" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;" disabled>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Idade Atual</label>
                     <input type="number" value="<%= usuario.idade %>" disabled style="background-color: #eee;">
-                    <small style="color: #666;">Calculada automaticamente a partir da data de nascimento.</small>
                 </div>
+
+                <div class="form-group">
+                    <label>Sexo</label>
+                    <select name="sexo" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="" disabled <%= !usuario.sexo ? 'selected' : '' %>>Selecione</option>
+                        <option value="Masculino" <%= usuario.sexo === 'Masculino' ? 'selected' : '' %>>Masculino</option>
+                        <option value="Feminino" <%= usuario.sexo === 'Feminino' ? 'selected' : '' %>>Feminino</option>
+                    </select>
+                </div>
+
+                <% if (tipoAcesso === 'Eleitor') { %>
+                    <div class="instructions-container" style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Zona Eleitoral (Apenas Leitura)</label>
+                            <input type="text" value="<%= usuario.zona || '-' %>" disabled style="background-color: #eee;">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Seção Eleitoral (Apenas Leitura)</label>
+                            <input type="text" value="<%= usuario.secao || '-' %>" disabled style="background-color: #eee;">
+                        </div>
+                    </div>
+                <% } %>
 
                 <div class="instructions-container" style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex: 1;">
                         <label>Estado (UF)</label>
-                        <select id="estado" name="estado" data-uf-salva="<%= usuario.estado %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                        <select id="estado" name="estado" data-uf-salva="<%= usuario.estado %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;" disabled>
                             <option value="">Selecione um estado</option>
                         </select>
                     </div>
                     <div class="form-group" style="flex: 2;">
                         <label>Cidade</label>
-                        <select id="cidade" name="cidade" data-cidade-salva="<%= usuario.cidade %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                        <select id="cidade" name="cidade" data-cidade-salva="<%= usuario.cidade %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;" disabled>
                             <option value="">Selecione uma cidade</option>
                         </select>
                     </div>
@@ -112,7 +133,6 @@
                         }
                         cidadeSelect.appendChild(option);
                     });
-                    cidadeSelect.disabled = false;
                 })
                 .catch(err => console.error("Erro ao carregar cidades:", err));
         }
