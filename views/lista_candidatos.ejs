@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Candidatos</title>
+    <!-- Título da aba dinâmico -->
+    <title>Candidatos - <%= nomeEleicao %></title>
     <link rel="stylesheet" href="/style.css">
     <style>
         .card-clicavel { cursor: pointer; transition: 0.2s; }
@@ -16,7 +17,8 @@
     <div class="container">
         <div class="view active">
             <header style="text-align: center; margin-bottom: 30px;">
-                <h2>Lista de Candidatos</h2>
+                <!-- Título da página dinâmico puxando do backend -->
+                <h2 style="color: #2c3e50;">Lista de Candidatos - <span style="color: #3498db;"><%= nomeEleicao %></span></h2>
                 <p>Selecione um cargo para filtrar a lista e clique em um candidato para ver as propostas</p>
             </header>
 
@@ -48,7 +50,6 @@
                                         <div>
                                             <strong style="font-size: 1.2rem;"><%= candidato.nome %></strong><br>
                                             <span>Partido: <strong><%= candidato.partido %></strong></span><br>
-                                            <!-- Corrigido para Cidade e Estado -->
                                             <span>Cidade/UF: <%= candidato.cidade %> - <%= candidato.estado %></span>
                                         </div>
                                         <div style="text-align: right;">
@@ -61,6 +62,14 @@
                             </div>
                         </div>
                     <% } %>
+                <% } %>
+                
+                <!-- Mensagem caso não tenha candidatos na eleição ativa -->
+                <% if (Object.keys(candidatosPorCargo).length === 0) { %>
+                    <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px; color: #7f8c8d;">
+                        <h3 style="margin-bottom: 10px;">Nenhum candidato encontrado</h3>
+                        <p>Ainda não há candidaturas homologadas para esta eleição.</p>
+                    </div>
                 <% } %>
             </div>
         </div>

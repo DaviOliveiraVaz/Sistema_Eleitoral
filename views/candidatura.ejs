@@ -34,56 +34,124 @@
                         <p><strong>Slogan:</strong> <%= candidato.slogan || 'Não informado' %></p>
                         <p><strong>Objetivo/Descrição:</strong><br> <%= candidato.descricao || 'Nenhuma descrição fornecida.' %></p>
                     </div>
+
+                    <!-- BLOCO DE AÇÕES: CANCELAR OU REFAZER -->
+                    <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px; text-align: center;">
+                        <form action="/cancelar_candidatura" method="POST" onsubmit="return confirm('Tem certeza que deseja apagar os dados da sua candidatura atual? Isso não poderá ser desfeito.');">
+                            
+                            <% if (candidato.status === 'Rejeitado') { %>
+                                <p style="font-size: 0.9rem; color: #721c24; margin-bottom: 15px;">Sua candidatura foi recusada pelo administrador. Clique abaixo para apagar o formulário e tentar novamente.</p>
+                                <button type="submit" class="btn" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
+                                    🔄 Apagar e Refazer Candidatura
+                                </button>
+                            <% } else { %>
+                                <button type="submit" class="btn" style="background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
+                                    ❌ Cancelar / Desistir da Candidatura
+                                </button>
+                            <% } %>
+
+                        </form>
+                    </div>
                 </div>
 
             <% } else { %>
+                
+                <!-- TRAVA DE SEGURANÇA: Só exibe o formulário se houver eleição ativa -->
+                <% if (!tipoEleicao) { %>
+                    <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border-left: 5px solid #dc3545;">
+                        <strong>Atenção:</strong> Não há nenhum período eleitoral aberto no momento. Aguarde a liberação do Administrador para lançar sua candidatura.
+                    </div>
+                <% } else { %>
+                    <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                        <strong>Eleições <%= tipoEleicao %>s Abertas!</strong> Preencha os dados abaixo para lançar sua candidatura.
+                    </div>
 
-                <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-                    <strong>Atenção:</strong> Você ainda não lançou sua candidatura. Preencha os dados abaixo.
-                </div>
-
-                <form action="/lancar_candidatura" method="POST">
-                    <div style="display: flex; gap: 15px;">
-                        <div class="form-group" style="flex: 1;">
-                            <label>Cargo Pretendido</label>
-                            <select id="select-cargo" name="cargo" required class="form-group" style="width: 100%; padding: 10px;">
-                                <option value="Presidente">Presidente</option>
-                                <option value="Governador">Governador</option>
-                                <option value="Senador">Senador</option>
-                                <option value="Deputado Federal">Deputado Federal</option>
-                                <option value="Deputado Estadual">Deputado Estadual</option>
-                                <option value="Prefeito">Prefeito</option>
-                                <option value="Vereador">Vereador</option>
-                            </select>
+                    <form action="/lancar_candidatura" method="POST">
+                        <div style="display: flex; gap: 15px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Cargo Pretendido</label>
+                                <select id="select-cargo" name="cargo" required class="form-group" style="width: 100%; padding: 10px;">
+                                    <option value="" disabled selected>Selecione um cargo...</option>
+                                    
+                                    <!-- RENDERIZAÇÃO DINÂMICA DOS CARGOS -->
+                                    <% if (tipoEleicao === 'Geral') { %>
+                                        <option value="Presidente">Presidente</option>
+                                        <option value="Governador">Governador</option>
+                                        <option value="Senador">Senador</option>
+                                        <option value="Deputado Federal">Deputado Federal</option>
+                                        <option value="Deputado Estadual">Deputado Estadual</option>
+                                    <% } else if (tipoEleicao === 'Municipal') { %>
+                                        <option value="Prefeito">Prefeito</option>
+                                        <option value="Vereador">Vereador</option>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Número de Campanha</label>
+                                <input type="number" id="input-numero" name="numero" required>
+                            </div>
                         </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>Número de Campanha</label>
-                            <input type="number" id="input-numero" name="numero" required>
+
+                        <div class="form-group">
+                            <label>Partido (Sigla)</label>
+                            <input type="text" name="partido" placeholder="Ex: PTADS" required>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Partido (Sigla)</label>
-                        <input type="text" name="partido" placeholder="Ex: PTADS" required>
-                    </div>
+                        <div class="form-group">
+                            <label>Slogan da Campanha</label>
+                            <input type="text" name="slogan" placeholder="Uma frase curta de efeito">
+                        </div>
 
-                    <div class="form-group">
-                        <label>Slogan da Campanha</label>
-                        <input type="text" name="slogan" placeholder="Uma frase curta de efeito">
-                    </div>
+                        <div class="form-group">
+                            <label>Descrição / Objetivo</label>
+                            <textarea name="descricao" rows="4" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+                        </div>
 
-                    <div class="form-group">
-                        <label>Descrição / Objetivo</label>
-                        <textarea name="descricao" rows="4" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        Lançar Candidatura
-                    </button>
-                </form>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Lançar Candidatura
+                        </button>
+                    </form>
+                <% } %>
             <% } %>
         </div>
     </div>
+
+            <% if (candidato.historicoCandidaturas && candidato.historicoCandidaturas.length > 0) { %>
+                <div class="login-card" style="max-width: 100%; margin-top: 30px; cursor: default; background-color: #fdfdfd; border: 1px solid #ddd;">
+                    <h3 style="color: #7f8c8d; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">📜 Histórico de Tentativas</h3>
+                    
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background-color: #f1f2f6; color: #2c3e50; border-bottom: 2px solid #ccc;">
+                                    <th style="padding: 12px 10px;">Cargo</th>
+                                    <th style="padding: 12px 10px;">Número</th>
+                                    <th style="padding: 12px 10px;">Partido</th>
+                                    <th style="padding: 12px 10px;">Motivo</th>
+                                    <th style="padding: 12px 10px;">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% candidato.historicoCandidaturas.reverse().forEach(hist => { %>
+                                    <tr style="border-bottom: 1px solid #eee;">
+                                        <td style="padding: 12px 10px;"><%= hist.cargo %></td>
+                                        <td style="padding: 12px 10px; font-weight: bold;"><%= hist.numero %></td>
+                                        <td style="padding: 12px 10px;"><%= hist.partido %></td>
+                                        <td style="padding: 12px 10px;">
+                                            <span class="<%= hist.statusFinal.includes('Rejeitada') ? 'status-rejeitado' : 'status-pendente' %>" style="font-size: 0.8rem; padding: 4px 8px;">
+                                                <%= hist.statusFinal %>
+                                            </span>
+                                        </td>
+                                        <td style="padding: 12px 10px; color: #7f8c8d;">
+                                            <%= new Date(hist.dataRegistro).toLocaleDateString('pt-BR') %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } %>
 
     <script>
         const regrasCargos = {
@@ -110,7 +178,6 @@
                 }
             }
             selectCargo.addEventListener("change", atualizarValidacao);
-            atualizarValidacao();
         }
     </script>
 </body>

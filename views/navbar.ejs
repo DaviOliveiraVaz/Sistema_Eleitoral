@@ -10,6 +10,7 @@
                 <a href="/lista_candidatos" class="navbar-link">👥 Candidatos</a>
                 <a href="/urna" class="navbar-link">🗳️ Votar</a>
                 <a href="/perfil" class="navbar-link">👤 Perfil</a>
+                <a href="/home_eleitor" class="navbar-link">Home</a>
             <% } %>
 
             <% if (tipoAcesso === 'Candidato') { %>
@@ -17,6 +18,7 @@
                 <a href="/urna" class="navbar-link">🗳️ Votar</a>
                 <a href="/minha_candidatura" class="navbar-link">🏛️ Minha Campanha</a>
                 <a href="/perfil" class="navbar-link">👤 Perfil</a>
+                <a href="/home_candidato" class="navbar-link">Home</a>
             <% } %>
 
             <% if (tipoAcesso === 'Administrador') { %>
@@ -25,7 +27,6 @@
                 <a href="/consulta_eleitores" class="navbar-link">🔍 Eleitores</a>
                 <a href="/eleicoes" class="navbar-link">Eleições</a>
                 <a href="/home_adm" class="navbar-link">Home</a>
-                
             <% } %>
 
             <a href="/sair" class="navbar-link navbar-sair">🚪 Sair</a>

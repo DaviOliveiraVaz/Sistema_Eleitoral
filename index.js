@@ -149,66 +149,44 @@ app.get("/urna", async function (req, res) {
         const tipoAcesso = req.session.tipoAcesso;
 
         if (!idUsuario) {
-            return res.status(401).send(
-                `<script>alert("Acesso negado. Você precisa estar logado."); window.location.href="/login";</script>`
-            );
+            return res.status(401).send(`<script>alert("Acesso negado. Você precisa estar logado."); window.location.href="/login";</script>`);
         }
 
         if (tipoAcesso === 'Administrador') {
-            return res.status(403).send(
-                `<script>alert("Administradores não têm acesso à urna de votação."); window.history.back();</script>`
-            );
+            return res.status(403).send(`<script>alert("Administradores não têm acesso à urna de votação."); window.history.back();</script>`);
         }
 
-        let ModeloVotante;
-        if (tipoAcesso === 'Eleitor') {
-            ModeloVotante = Eleitor;
-        } else if (tipoAcesso === 'Candidato') {
-            ModeloVotante = Candidato;
-        }
-
+        let ModeloVotante = tipoAcesso === 'Eleitor' ? Eleitor : Candidato;
         const usuarioVotante = await ModeloVotante.findById(idUsuario);
 
         if (!usuarioVotante) {
-            return res.status(404).send(
-                `<script>alert("Usuário não encontrado."); window.location.href="/login";</script>`
-            );
+            return res.status(404).send(`<script>alert("Usuário não encontrado."); window.location.href="/login";</script>`);
         }
 
-        if (usuarioVotante.votou) {
-            return res.send(`
-                <script>
-                    alert("Você já votou.");
-                    window.location.href = "${res.locals.linkHome}";
-                </script>
-            `);
-        }
-
-        // Busca a eleição ativa para determinar o tipo (Geral ou Municipal)
         const eleicaoAtiva = await Eleicao.findOne({ ativa: true });
 
         if (!eleicaoAtiva) {
-            return res.send(`
-                <script>
-                    alert("Nenhuma eleição ativa no momento.");
-                    window.location.href = "${res.locals.linkHome}";
-                </script>
-            `);
+            return res.send(`<script>alert("Nenhuma eleição ativa no momento."); window.location.href = "${res.locals.linkHome}";</script>`);
         }
 
-        const tipoEleicao = eleicaoAtiva.tipo; // "Geral" ou "Municipal"
+        const tipoEleicao = eleicaoAtiva.tipo; 
+
+        // TRAVA: Verifica a eleição específica
+        if (tipoEleicao === "Geral" && usuarioVotante.votouGeral) {
+            return res.send(`<script>alert("Você já votou nas Eleições Gerais."); window.location.href = "${res.locals.linkHome}";</script>`);
+        } else if (tipoEleicao === "Municipal" && usuarioVotante.votouMunicipal) {
+            return res.send(`<script>alert("Você já votou nas Eleições Municipais."); window.location.href = "${res.locals.linkHome}";</script>`);
+        }
+
         const estadoEleitor = usuarioVotante.estado;
         const cidadeEleitor = usuarioVotante.cidade;
 
-        // Filtro base: apenas homologados e ativos
         const filtro = { status: "Homologado", ativo: true };
 
         if (tipoEleicao === "Municipal") {
-            // Eleição municipal: candidatos da mesma cidade do eleitor, cargos municipais
             filtro.cidade = cidadeEleitor;
             filtro.cargo = { $in: ["Prefeito", "Vereador"] };
         } else {
-            // Eleição geral: candidatos do mesmo estado do eleitor, cargos federais/estaduais
             filtro.estado = estadoEleitor;
             filtro.cargo = { $in: ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual"] };
         }
@@ -228,28 +206,24 @@ app.post("/votar", async (req, res) => {
         const tipoAcesso = req.session.tipoAcesso;
 
         if (!idUsuario) {
-            return res.status(401).json({ message: "Acesso negado. Você precisa estar logado para votar." });
+            return res.status(401).json({ message: "Acesso negado." });
         }
 
-        if (tipoAcesso === 'Administrador') {
-            return res.status(403).json({ message: "Administradores não votam." });
-        }
-
-        let ModeloVotante;
-        if (tipoAcesso === 'Eleitor') {
-            ModeloVotante = Eleitor;
-        } else if (tipoAcesso === 'Candidato') {
-            ModeloVotante = Candidato;
-        }
-
+        let ModeloVotante = tipoAcesso === 'Eleitor' ? Eleitor : Candidato;
         const usuarioVotante = await ModeloVotante.findById(idUsuario);
 
-        if (!usuarioVotante) {
-            return res.status(404).json({ message: "Usuário não encontrado no sistema." });
+        const eleicaoAtiva = await Eleicao.findOne({ ativa: true });
+        if (!eleicaoAtiva) {
+            return res.status(400).json({ message: "Nenhuma eleição ativa no momento." });
         }
 
-        if (usuarioVotante.votou) {
-            return res.status(400).json({ message: "Você já votou." });
+        const tipoEleicao = eleicaoAtiva.tipo;
+
+        // TRAVA DE SEGURANÇA FINAL
+        if (tipoEleicao === "Geral" && usuarioVotante.votouGeral) {
+            return res.status(400).json({ message: "Você já votou nas Eleições Gerais." });
+        } else if (tipoEleicao === "Municipal" && usuarioVotante.votouMunicipal) {
+            return res.status(400).json({ message: "Você já votou nas Eleições Municipais." });
         }
 
         const cargosGeral = {
@@ -265,8 +239,7 @@ app.post("/votar", async (req, res) => {
             prefeito: "Prefeito"
         };
 
-        // Detecta o tipo pelo body recebido da urna
-        const isMunicipal = req.body.vereador !== undefined || req.body.prefeito !== undefined;
+        const isMunicipal = tipoEleicao === "Municipal";
         const mapaCargos = isMunicipal ? cargosMunicipal : cargosGeral;
 
         async function validarCandidato(numero, cargo) {
@@ -280,19 +253,20 @@ app.post("/votar", async (req, res) => {
             voto[chave] = await validarCandidato(req.body[chave], nomeCargo);
         }
 
-        await Voto.create({
-            votos: voto
-        });
+        await Voto.create({ votos: voto });
 
         for (let cargo in voto) {
             if (voto[cargo]) {
-                await Candidato.findByIdAndUpdate(voto[cargo], {
-                    $inc: { votos: 1 }
-                });
+                await Candidato.findByIdAndUpdate(voto[cargo], { $inc: { votos: 1 } });
             }
         }
 
-        usuarioVotante.votou = true;
+        // SALVA A TRAVA CORRETA
+        if (tipoEleicao === "Geral") {
+            usuarioVotante.votouGeral = true;
+        } else {
+            usuarioVotante.votouMunicipal = true;
+        }
         await usuarioVotante.save();
 
         res.json({ message: "Voto registrado com sucesso!" });
@@ -348,14 +322,27 @@ app.post("/admin/homologar", async (req, res) => {
 
 app.get("/resultados", async (req, res) => {
   try {
-    // A apuração só contabiliza os homologados E ativos
-const candidatos = await Candidato.find({ 
-    status: "Homologado", 
-    ativo: true 
-}).sort({ votos: -1 });
+    // Mesma lógica: verifica a eleição ativa
+    const eleicaoAtiva = await Eleicao.findOne({ ativa: true });
+
+    if (!eleicaoAtiva) {
+        return res.render("resultados.ejs", { 
+            resultadosPorCargo: {}, 
+            nomeEleicao: "Nenhuma eleição ativa no momento" 
+        });
+    }
+
+    const filtro = { status: "Homologado", ativo: true };
+
+    if (eleicaoAtiva.tipo === "Municipal") {
+        filtro.cargo = { $in: ["Prefeito", "Vereador"] };
+    } else {
+        filtro.cargo = { $in: ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual"] };
+    }
+
+    const candidatos = await Candidato.find(filtro).sort({ votos: -1 });
 
     const resultadosPorCargo = {};
-
     candidatos.forEach(candidato => {
       if (!resultadosPorCargo[candidato.cargo]) {
         resultadosPorCargo[candidato.cargo] = [];
@@ -363,7 +350,7 @@ const candidatos = await Candidato.find({
       resultadosPorCargo[candidato.cargo].push(candidato);
     });
 
-    res.render("resultados.ejs", { resultadosPorCargo });
+    res.render("resultados.ejs", { resultadosPorCargo, nomeEleicao: eleicaoAtiva.nome });
 
   } catch (error) {
     console.error("Erro ao carregar os resultados:", error);
@@ -377,7 +364,8 @@ app.get("/cadastro_eleitor", function (req, res) {
 
 app.post("/cadastro_eleitor", async (req, res) => {
     try {
-        const { nome, cpf, dataNascimento, estado, cidade, sexo, zona, secao, senha } = req.body;
+        // Removemos zona e secao da requisição, o usuário não envia mais isso!
+        const { nome, cpf, dataNascimento, estado, cidade, sexo, senha } = req.body;
 
         const eleitorExistente = await Eleitor.findOne({ cpf: cpf });
         
@@ -399,7 +387,6 @@ app.post("/cadastro_eleitor", async (req, res) => {
             idadedecalculo--;
         }
 
-        // REGRA DE NEGÓCIO: Idade mínima de 16 anos para eleitores
         if (idadedecalculo < 16) {
             return res.send(`
                 <script>
@@ -408,6 +395,18 @@ app.post("/cadastro_eleitor", async (req, res) => {
                 </script>
             `);
         }
+
+        // --- MÁGICA DA REGIONALIZAÇÃO: GERADOR DE ZONA E SEÇÃO ---
+        // 1. Gera a Zona baseada na cidade/estado (mesma cidade = mesma zona)
+        const stringLocal = `${cidade}-${estado}`;
+        let hashLocal = 0;
+        for (let i = 0; i < stringLocal.length; i++) {
+            hashLocal += stringLocal.charCodeAt(i);
+        }
+        const zonaGerada = String((hashLocal % 300) + 1).padStart(3, '0'); // Ex: 045
+        
+        // 2. Gera a Seção de forma aleatória para distribuir nas "salas" (0001 a 0500)
+        const secaoGerada = String(Math.floor(Math.random() * 500) + 1).padStart(4, '0'); // Ex: 0128
 
         const hash = await bcrypt.hash(senha, saltRounds);
 
@@ -419,19 +418,16 @@ app.post("/cadastro_eleitor", async (req, res) => {
             estado,
             cidade,
             sexo,
-            zona,
-            secao,
+            zona: zonaGerada,   // Salvando o valor automático
+            secao: secaoGerada, // Salvando o valor automático
             senha: hash
         });
-
-        console.log("==== TESTE TAREFA 3: ELEITOR ====");
-        console.log("Idade calculada salva no objeto:", novoEleitor.idade);
 
         await novoEleitor.save();
 
         res.send(`
             <script>
-                alert('Eleitor cadastrado com sucesso! Agora você pode votar.');
+                alert('Eleitor cadastrado com sucesso!\\nSua Zona Eleitoral: ${zonaGerada}\\nSua Seção: ${secaoGerada}\\n\\nAgora você pode fazer login e votar.');
                 window.location.href = "/login";
             </script>
         `);
@@ -461,6 +457,15 @@ app.post("/cadastro_candidato", async (req, res) => {
             idadedecalculo--;
         }
 
+        // --- MÁGICA DA REGIONALIZAÇÃO: GERADOR DE ZONA E SEÇÃO ---
+        const stringLocal = `${cidade}-${estado}`;
+        let hashLocal = 0;
+        for (let i = 0; i < stringLocal.length; i++) {
+            hashLocal += stringLocal.charCodeAt(i);
+        }
+        const zonaGerada = String((hashLocal % 300) + 1).padStart(3, '0');
+        const secaoGerada = String(Math.floor(Math.random() * 500) + 1).padStart(4, '0');
+
         const hash = await bcrypt.hash(senha, saltRounds);
 
         const novoCandidato = new Candidato({
@@ -471,14 +476,15 @@ app.post("/cadastro_candidato", async (req, res) => {
             estado,
             cidade,
             sexo,
+            zona: zonaGerada,
+            secao: secaoGerada,
             senha: hash
         });
         
         await novoCandidato.save();
-        res.send("<script>alert('Cadastro concluído! Faça login no portal para lançar sua candidatura.'); window.location.href = '/login';</script>");
+        res.send(`<script>alert('Cadastro concluído!\\nSua Zona Eleitoral: ${zonaGerada}\\nSua Seção: ${secaoGerada}\\n\\nFaça login no portal para lançar sua candidatura.'); window.location.href = '/login';</script>`);
     } catch (error) {
         console.error("ERRO GRAVE AO CADASTRAR:", error);
-        // Agora o alerta vai te mostrar EXATAMENTE o que o banco recusou
         res.send(`<script>alert("Erro ao cadastrar: ${error.message}"); window.history.back();</script>`);
     }
 });
@@ -491,11 +497,28 @@ app.get("/home_adm", (req, res) => res.render("home_adm.ejs"));
 
 app.get("/lista_candidatos", async (req, res) => {
     try {
-        // Mostra apenas candidatos homologados E ativos
-const candidatos = await Candidato.find({ 
-    status: "Homologado", 
-    ativo: true 
-}).sort({ nome: 1 });
+        // Busca qual é a eleição ativa no momento
+        const eleicaoAtiva = await Eleicao.findOne({ ativa: true });
+
+        // Se não houver eleição ativa, manda um objeto vazio para não quebrar a tela
+        if (!eleicaoAtiva) {
+            return res.render("lista_candidatos.ejs", { 
+                candidatosPorCargo: {}, 
+                nomeEleicao: "Nenhuma eleição ativa no momento" 
+            });
+        }
+
+        // Filtro base: apenas os homologados e ativos
+        const filtro = { status: "Homologado", ativo: true };
+
+        // Aplica o filtro de cargos dependendo do tipo da eleição
+        if (eleicaoAtiva.tipo === "Municipal") {
+            filtro.cargo = { $in: ["Prefeito", "Vereador"] };
+        } else {
+            filtro.cargo = { $in: ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual"] };
+        }
+
+        const candidatos = await Candidato.find(filtro).sort({ nome: 1 });
 
         const candidatosPorCargo = {};
         candidatos.forEach(candidato => {
@@ -505,7 +528,8 @@ const candidatos = await Candidato.find({
             candidatosPorCargo[candidato.cargo].push(candidato);
         });
 
-        res.render("lista_candidatos.ejs", { candidatosPorCargo });
+        // Passamos o nome da eleição para a tela
+        res.render("lista_candidatos.ejs", { candidatosPorCargo, nomeEleicao: eleicaoAtiva.nome });
 
     } catch (error) {
         console.error("Erro ao carregar candidatos:", error);
@@ -527,7 +551,10 @@ app.get("/minha_candidatura", async (req, res) => {
             return res.send(`<script>alert("Candidato não encontrado."); window.location.href="/login";</script>`);
         }
 
-        res.render("candidatura.ejs", { candidato });
+        const eleicaoAtiva = await Eleicao.findOne({ ativa: true });
+        const tipoEleicao = eleicaoAtiva ? eleicaoAtiva.tipo : null;
+
+        res.render("candidatura.ejs", { candidato, tipoEleicao });
 
     } catch (error) {
         console.error("Erro ao carregar candidatura:", error);
@@ -582,6 +609,40 @@ app.post("/lancar_candidatura", async (req, res) => {
     } catch (error) {
         console.error("Erro ao lançar candidatura:", error);
         res.status(500).send(`<script>alert("Erro ao lançar candidatura."); window.history.back();</script>`);
+    }
+});
+
+app.post("/cancelar_candidatura", async (req, res) => {
+    try {
+        const idUsuario = req.session.id_usuario;
+
+        if (!idUsuario || req.session.tipoAcesso !== 'Candidato') {
+            return res.send(`<script>alert("Acesso negado."); window.location.href="/login";</script>`);
+        }
+
+        const candidato = await Candidato.findById(idUsuario);
+        if (!candidato || !candidato.cargo) {
+            return res.redirect("/minha_candidatura");
+        }
+
+        const registroHistorico = {
+            cargo: candidato.cargo,
+            numero: candidato.numero,
+            partido: candidato.partido,
+            statusFinal: candidato.status === 'Rejeitado' ? 'Rejeitada pelo TSE' : 'Cancelada pelo Candidato'
+        };
+
+        await Candidato.findByIdAndUpdate(idUsuario, {
+            $push: { historicoCandidaturas: registroHistorico },
+            $unset: { cargo: "", numero: "", partido: "", slogan: "", descricao: "" },
+            $set: { status: "Nenhuma" }
+        });
+
+        res.send(`<script>alert("Candidatura movida para o histórico com sucesso. Você pode lançar uma nova quando quiser."); window.location.href="/minha_candidatura";</script>`);
+
+    } catch (error) {
+        console.error("Erro ao cancelar candidatura:", error);
+        res.status(500).send(`<script>alert("Erro ao processar a solicitação."); window.history.back();</script>`);
     }
 });
 
@@ -641,14 +702,24 @@ app.post("/perfil/editar", async (req, res) => {
             idade: idadedecalculo,
             estado: estado || usuarioAtual.estado,
             cidade: cidade || usuarioAtual.cidade,
-            sexo
+            sexo: sexo || usuarioAtual.sexo
         };
+
+        if (estado !== usuarioAtual.estado || cidade !== usuarioAtual.cidade) {
+            const stringLocal = `${dadosAtualizados.cidade}-${dadosAtualizados.estado}`;
+            let hashLocal = 0;
+            for (let i = 0; i < stringLocal.length; i++) {
+                hashLocal += stringLocal.charCodeAt(i);
+            }
+            dadosAtualizados.zona = String((hashLocal % 300) + 1).padStart(3, '0');
+            dadosAtualizados.secao = String(Math.floor(Math.random() * 500) + 1).padStart(4, '0');
+        }
 
         await Modelo.findByIdAndUpdate(idUsuario, dadosAtualizados);
 
         res.send(`
             <script>
-                alert('Dados updated com sucesso!');
+                alert('Dados atualizados com sucesso!');
                 window.location.href = "/perfil";
             </script>
         `);

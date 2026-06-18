@@ -11,7 +11,9 @@ const EleitorSchema = new Schema({
   zona: { type: String, required: true },
   secao: { type: String, required: true },
   nacionalidade: { type: String, required: true, default: "Brasileira" },
-  votou: { type: Boolean, default: false },
+  // TRAVAS SEPARADAS POR ELEIÇÃO
+  votouGeral: { type: Boolean, default: false },
+  votouMunicipal: { type: Boolean, default: false },
   senha: { type: String, required: true },
   ativo: { type: Boolean, default: true }
 });
