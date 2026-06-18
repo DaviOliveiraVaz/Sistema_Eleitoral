@@ -35,7 +35,7 @@
                                 dataFormatada = d.toISOString().split('T')[0];
                             }
                         %>
-                        <input type="date" name="dataNascimento" value="<%= dataFormatada %>" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;" disabled>
+                        <input type="date" name="dataNascimento" value="<%= dataFormatada %>" disabled required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
                     </div>
                 </div>
 
@@ -46,36 +46,34 @@
 
                 <div class="form-group">
                     <label>Sexo</label>
-                    <select name="sexo" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                    <select name="sexo" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;" disabled>
                         <option value="" disabled <%= !usuario.sexo ? 'selected' : '' %>>Selecione</option>
                         <option value="Masculino" <%= usuario.sexo === 'Masculino' ? 'selected' : '' %>>Masculino</option>
                         <option value="Feminino" <%= usuario.sexo === 'Feminino' ? 'selected' : '' %>>Feminino</option>
                     </select>
                 </div>
 
-                <% if (tipoAcesso === 'Eleitor') { %>
-                    <div class="instructions-container" style="display: flex; gap: 15px;">
-                        <div class="form-group" style="flex: 1;">
-                            <label>Zona Eleitoral (Apenas Leitura)</label>
-                            <input type="text" value="<%= usuario.zona || '-' %>" disabled style="background-color: #eee;">
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>Seção Eleitoral (Apenas Leitura)</label>
-                            <input type="text" value="<%= usuario.secao || '-' %>" disabled style="background-color: #eee;">
-                        </div>
+                <div class="instructions-container" style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Zona Eleitoral (Apenas Leitura)</label>
+                        <input type="text" value="<%= usuario.zona || '-' %>" disabled style="background-color: #eee; font-weight: bold; color: #2c3e50;">
                     </div>
-                <% } %>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Seção Eleitoral (Apenas Leitura)</label>
+                        <input type="text" value="<%= usuario.secao || '-' %>" disabled style="background-color: #eee; font-weight: bold; color: #2c3e50;">
+                    </div>
+                </div>
 
                 <div class="instructions-container" style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex: 1;">
                         <label>Estado (UF)</label>
-                        <select id="estado" name="estado" data-uf-salva="<%= usuario.estado %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;" disabled>
+                        <select id="estado" name="estado" data-uf-salva="<%= usuario.estado %>" disabled required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
                             <option value="">Selecione um estado</option>
                         </select>
                     </div>
                     <div class="form-group" style="flex: 2;">
                         <label>Cidade</label>
-                        <select id="cidade" name="cidade" data-cidade-salva="<%= usuario.cidade %>" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;" disabled>
+                        <select id="cidade" name="cidade" data-cidade-salva="<%= usuario.cidade %>" disabled required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
                             <option value="">Selecione uma cidade</option>
                         </select>
                     </div>
@@ -84,9 +82,9 @@
                 <div class="form-group">
                     <label>Situação do Voto</label>
                     <div style="margin-top: 5px;">
-                        <% if (usuario.votou) { %>
+                        <% if (usuario.votouGeral || usuario.votouMunicipal) { %>
                             <span class="status-aprovado" style="background-color: #d4edda; padding: 6px 12px; border-radius: 4px;">
-                                ● Voto Confirmado
+                                ● Voto Registrado
                             </span>
                         <% } else { %>
                             <span class="status-rejeitado" style="background-color: #f8d7da; padding: 6px 12px; border-radius: 4px;">
@@ -119,7 +117,8 @@
 
         function carregarCidades(uf, preSelecionar = '') {
             cidadeSelect.innerHTML = '<option value="">Carregando...</option>';
-            cidadeSelect.disabled = true;
+            cidadeSelect.disabled = true; 
+            
             fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
                 .then(res => res.json())
                 .then(cidades => {
