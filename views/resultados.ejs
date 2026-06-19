@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultados da Eleição</title>
-    <!-- Caminho do CSS corrigido (do main) -->
     <link rel="stylesheet" href="/style.css">
-    <!-- Biblioteca PDF mantida (do branch rogerio) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -15,7 +13,7 @@
     <div class="container">
         <div class="view active">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>Resultados Parciais</h2>
+                <h2>Resultados Parciais - <%= nomeEleicao %></h2>
                 <button class="btn btn-primary" onclick="gerarPDF()" style="padding: 10px 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">Baixar Relatório em PDF</button>
             </div>
 
@@ -31,9 +29,31 @@
                     <% if (candidatosDoCargo.length > 0) { %>
                         <h3 class="section-title" style="color: #3498db; border-color: #3498db;"><%= cargo %></h3>
 
+                        <!-- PAINEL DE ESTATÍSTICAS -->
+                        <% if (estatisticas && estatisticas[cargo]) { %>
+                            <div style="display: flex; gap: 15px; margin-bottom: 20px; justify-content: space-between; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                                <div style="text-align: center; flex: 1;">
+                                    <span style="display: block; font-size: 0.9rem; color: #7f8c8d;">Total Apurado</span>
+                                    <strong style="font-size: 1.5rem; color: #2c3e50;"><%= estatisticas[cargo].total %></strong>
+                                </div>
+                                <div style="text-align: center; flex: 1; border-left: 1px solid #ccc; border-right: 1px solid #ccc;">
+                                    <span style="display: block; font-size: 0.9rem; color: #7f8c8d;">Votos Válidos</span>
+                                    <strong style="font-size: 1.5rem; color: #2ecc71;"><%= estatisticas[cargo].validos %></strong>
+                                </div>
+                                <div style="text-align: center; flex: 1; border-right: 1px solid #ccc;">
+                                    <span style="display: block; font-size: 0.9rem; color: #7f8c8d;">Em Branco</span>
+                                    <strong style="font-size: 1.5rem; color: #95a5a6;"><%= estatisticas[cargo].brancos %></strong>
+                                </div>
+                                <div style="text-align: center; flex: 1;">
+                                    <span style="display: block; font-size: 0.9rem; color: #7f8c8d;">Nulos</span>
+                                    <strong style="font-size: 1.5rem; color: #e74c3c;"><%= estatisticas[cargo].nulos %></strong>
+                                </div>
+                            </div>
+                        <% } %>
+
                         <div class="instructions-container">
                             <div class="instruction-item" style="text-align: left;">
-                                <h4>Ranking</h4>
+                                <h4>Ranking de Candidatos</h4>
                                 <ul style="list-style: none; padding: 0; line-height: 2;">
                                     <% candidatosDoCargo.forEach((candidato, index) => { %>
                                         <li>
@@ -74,7 +94,10 @@
                             backgroundColor: cores.slice(0, candidatos.length)
                         }]
                     },
-                    options: { responsive: false }
+                    options: { 
+                        responsive: false,
+                        animation: false // <-- O SEGREDO QUE RESOLVE A CORRUPÇÃO DO PDF
+                    }
                 });
             }
         }
@@ -88,11 +111,15 @@
                 margin: 10,
                 filename: 'Apuracao_Eleicoes_2026.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
+                html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             html2pdf().set(opcoes).from(elemento).save().then(() => {
+                header.style.display = 'none';
+            }).catch(err => {
+                console.error("Erro ao gerar PDF:", err);
+                alert("Ocorreu um erro ao gerar o PDF.");
                 header.style.display = 'none';
             });
         }
