@@ -277,27 +277,6 @@ app.post("/votar", async (req, res) => {
     }
 });
 
-app.get("/candidato", function (req, res) {
-  res.render("candidato.ejs", {});
-});
-
-app.get("/admin", function (req, res) {
-    try {
-        const administradorId = req.session.id_usuario;
-
-        if (!administradorId) {
-            return res.status(401).json({ message: "Acesso negado. Você precisa estar logado para votar." });
-        }
-
-      Candidato.find({}).then(function (docs) {
-        res.render("admin.ejs", { Candidatos: docs });
-      });
-    } catch (error) {
-      console.error("Erro: ", error);
-      res.status(500).send("Ocorreu um erro ao carregar os candidatos.");
-    }
-});
-
 app.post("/admin/homologar", async (req, res) => {
     try {
         if (req.session.tipoAcesso !== 'Administrador') {
@@ -868,54 +847,74 @@ app.post("/eleitores/:id/inativar", async (req, res) => {
     }
 });
 
+app.get("/eleicoes", async (req, res) => {
+  if (req.session.tipoAcesso !== 'Administrador') {
+    return res.redirect('/login');
+  }
+  const eleicoes = await Eleicao.find();
+  res.render("eleicoes.ejs", { eleicoes });
+});
+
+app.get("/eleicoes/nova", (req, res) => {
+  if (req.session.tipoAcesso !== 'Administrador') {
+    return res.redirect('/login');
+  }
+  res.render("nova_eleicao.ejs");
+});
+
+app.post("/eleicoes/nova", async (req, res) => {
+  if (req.session.tipoAcesso !== 'Administrador') {
+    return res.redirect('/login');
+  }
+  await Eleicao.create({
+    nome: req.body.nome,
+    tipo: req.body.tipo
+  });
+  res.redirect("/eleicoes");
+});
+
+app.get("/eleicoes/editar/:id", async (req, res) => {
+  if (req.session.tipoAcesso !== 'Administrador') {
+    return res.redirect('/login');
+  }
+  const eleicao = await Eleicao.findById(req.params.id);
+  if (!eleicao) return res.redirect("/eleicoes");
+  res.render("editar_eleicao.ejs", { eleicao });
+});
+
+app.post("/eleicoes/editar/:id", async (req, res) => {
+  if (req.session.tipoAcesso !== 'Administrador') {
+    return res.redirect('/login');
+  }
+  await Eleicao.findByIdAndUpdate(req.params.id, {
+    nome: req.body.nome,
+    tipo: req.body.tipo
+  });
+  res.redirect("/eleicoes?editada=1&nome=" + encodeURIComponent(req.body.nome));
+});
+
+app.post("/eleicoes/excluir/:id", async (req, res) => {
+  if (req.session.tipoAcesso !== 'Administrador') {
+    return res.redirect('/login');
+  }
+  const eleicao = await Eleicao.findById(req.params.id);
+  if (eleicao && eleicao.ativa) {
+    return res.redirect("/eleicoes?erro=ativa");
+  }
+  await Eleicao.findByIdAndDelete(req.params.id);
+  res.redirect("/eleicoes?excluida=1");
+});
+
+app.get("/eleicoes/ativar/:id", async (req, res) => {
+  if (req.session.tipoAcesso !== 'Administrador') {
+    return res.redirect('/login');
+  }
+  await Eleicao.updateMany({}, { $set: { ativa: false } });
+  const eleicao = await Eleicao.findByIdAndUpdate(req.params.id, { ativa: true }, { new: true });
+  const nome = eleicao ? encodeURIComponent(eleicao.nome) : '';
+  res.redirect(`/eleicoes?ativada=1&nome=${nome}`);
+});
+
 app.listen("3000", function () {
   console.log("Servidor rodando na porta 3000!");
-});
-
-// ===== ELEICOES =====
-app.get("/eleicoes", async(req,res)=>{
- const eleicoes = await Eleicao.find();
- res.render("eleicoes.ejs",{eleicoes});
-});
-
-app.get("/eleicoes/nova",(req,res)=>{
- res.render("nova_eleicao.ejs");
-});
-
-app.post("/eleicoes/nova", async(req,res)=>{
- await Eleicao.create({
-   nome:req.body.nome,
-   tipo:req.body.tipo
- });
- res.redirect("/eleicoes");
-});
-
-app.get("/eleicoes/editar/:id", async(req,res)=>{
- const eleicao = await Eleicao.findById(req.params.id);
- if (!eleicao) return res.redirect("/eleicoes");
- res.render("editar_eleicao.ejs", { eleicao });
-});
-
-app.post("/eleicoes/editar/:id", async(req,res)=>{
- await Eleicao.findByIdAndUpdate(req.params.id, {
-   nome: req.body.nome,
-   tipo: req.body.tipo
- });
- res.redirect("/eleicoes?editada=1&nome=" + encodeURIComponent(req.body.nome));
-});
-
-app.post("/eleicoes/excluir/:id", async(req,res)=>{
- const eleicao = await Eleicao.findById(req.params.id);
- if (eleicao && eleicao.ativa) {
-   return res.redirect("/eleicoes?erro=ativa");
- }
- await Eleicao.findByIdAndDelete(req.params.id);
- res.redirect("/eleicoes?excluida=1");
-});
-
-app.get("/eleicoes/ativar/:id", async(req,res)=>{
- await Eleicao.updateMany({},{$set:{ativa:false}});
- const eleicao = await Eleicao.findByIdAndUpdate(req.params.id,{ativa:true},{new:true});
- const nome = eleicao ? encodeURIComponent(eleicao.nome) : '';
- res.redirect(`/eleicoes?ativada=1&nome=${nome}`);
 });

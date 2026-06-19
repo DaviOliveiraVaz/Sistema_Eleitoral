@@ -33,8 +33,8 @@
                                 <strong style="font-size: 1.2rem;"><%= eleitor.nome %></strong><br>
                                 <span>CPF: <strong><%= eleitor.cpf %></strong></span><br>
                                 <span>Cidade/UF: <%= eleitor.cidade %> - <%= eleitor.estado %></span><br>
-                                <span style="font-size: 0.85rem; color: <%= eleitor.votou ? '#2ecc71' : '#e74c3c' %>;">
-                                    <%= eleitor.votou ? '● Já Votou' : '○ Ainda não votou' %>
+                                <span style="font-size: 0.85rem; color: <%= (eleitor.votouGeral || eleitor.votouMunicipal) ? '#2ecc71' : '#e74c3c' %>;">
+                                    <%= (eleitor.votouGeral || eleitor.votouMunicipal) ? '● Já Votou' : '○ Ainda não votou' %>
                                 </span>
                             </div>
                             <div style="text-align: right;">
@@ -135,7 +135,7 @@
                 <p style="margin-bottom: 5px;"><strong>Nacionalidade:</strong> ${eleitor.nacionalidade || 'Brasileira'}</p>
 
                 <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; margin-bottom: 10px;">⚙️ Sistema</h4>
-                <p style="margin-bottom: 5px;"><strong>Votou:</strong> ${eleitor.votou ? 'Sim' : 'Não'}</p>
+                <p style="margin-bottom: 5px;"><strong>Votou:</strong> ${(eleitor.votouGeral || eleitor.votouMunicipal) ? 'Sim' : 'Não'}</p>
                 <p style="margin-bottom: 5px;"><strong>Cadastro Ativo:</strong> ${eleitor.ativo !== false ? 'Sim' : 'Não'}</p>
             `;
             document.getElementById('conteudoDetalhes').innerHTML = html;

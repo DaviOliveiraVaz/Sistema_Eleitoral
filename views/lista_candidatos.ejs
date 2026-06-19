@@ -99,7 +99,7 @@
             const candidato = JSON.parse(decodeURIComponent(elemento.getAttribute('data-candidato')));
             const dataNasc = candidato.dataNascimento ? candidato.dataNascimento.split('T')[0].split('-').reverse().join('/') : 'Não informada';
             
-            // Ocultamos dados sensíveis como CPF para os eleitores
+            
             const html = `
                 <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px;">👤 Informações Básicas</h4>
                 <p style="margin-bottom: 5px;"><strong>Nome de Urna:</strong> ${candidato.nome}</p>

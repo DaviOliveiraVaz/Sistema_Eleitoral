@@ -178,7 +178,7 @@
                 <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; margin-bottom: 10px;">⚙️ Sistema</h4>
                 <p style="margin-bottom: 5px;"><strong>Status do Sistema:</strong> <span class="status-aprovado">${candidato.status}</span></p>
                 <p style="margin-bottom: 5px;"><strong>Votos Recebidos:</strong> ${candidato.votos || 0}</p>
-                <p style="margin-bottom: 5px;"><strong>Votou como eleitor:</strong> ${candidato.votou ? 'Sim' : 'Não'}</p>
+                <p style="margin-bottom: 5px;"><strong>Votou como eleitor:</strong> ${(candidato.votouGeral || candidato.votouMunicipal) ? 'Sim' : 'Não'}</p>
                 <p style="margin-bottom: 5px;"><strong>Cadastro Ativo:</strong> ${candidato.ativo !== false ? 'Sim' : 'Não'}</p>
             `;
             document.getElementById('conteudoDetalhes').innerHTML = html;

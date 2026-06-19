@@ -12,16 +12,6 @@
     <div id="admin" class="container">
         <h2>Painel Administrativo</h2>
 
-        <% 
-            // 1. Primeiro separamos APENAS as contas que já lançaram candidatura (tem cargo e número)
-            let candidatosComCampanha = Candidatos.filter(c => c.cargo && c.numero);
-            
-            // 2. Agora calculamos os totais apenas em cima das campanhas reais
-            let totalRecebidos = candidatosComCampanha.length;
-            let totalAprovados = candidatosComCampanha.filter(c => c.status === 'Homologado').length;
-            let totalRejeitados = candidatosComCampanha.filter(c => c.status === 'Rejeitado').length;
-            let totalPendentes = candidatosComCampanha.filter(c => c.status === 'Pendente').length;
-        %>
         
         <div class="stats-container" style="display: flex; gap: 20px; margin-bottom: 30px;">
             <div class="stat-card">
