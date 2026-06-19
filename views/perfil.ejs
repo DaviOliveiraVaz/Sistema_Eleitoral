@@ -153,13 +153,13 @@
     </div>
 
     <script>
-        // Função para Gerar PDF pelo Perfil
+        
         function gerarComprovantePerfil(tipo) {
             const dataAtual = new Date().toLocaleString('pt-BR');
             document.getElementById('comp-data').innerText = dataAtual;
             document.getElementById('comp-eleicao').innerText = tipo;
             
-            // Código de validação persistente (Baseado no ID do Usuário + Tipo)
+            
             const idUsuario = "<%= usuario._id %>".substring(0,8).toUpperCase();
             const hash = idUsuario + "-" + btoa(tipo).toUpperCase();
             document.getElementById('comp-hash').innerText = hash;
@@ -182,7 +182,7 @@
             });
         }
 
-        // Lógica de Cidades do IBGE mantida...
+        
         const estadoSelect = document.getElementById("estado");
         const cidadeSelect = document.getElementById("cidade");
         

@@ -241,7 +241,7 @@ app.post("/votar", async (req, res) => {
         const isMunicipal = tipoEleicao === "Municipal";
         const mapaCargos = isMunicipal ? cargosMunicipal : cargosGeral;
 
-        // VALIDAÇÃO BLINDADA: Garante que Branco e Nulo sejam gravados como Texto
+      
         async function validarCandidato(numero, cargo) {
             if (numero === null || numero === "") return "Branco"; 
             const candidato = await Candidato.findOne({ numero: Number(numero), cargo, status: "Homologado", ativo: true });
@@ -358,7 +358,7 @@ app.get("/resultados", async (req, res) => {
             resultadosPorCargo[candidato.cargo].push(candidato);
         });
 
-        // O SEGREDO: O ".lean()" traz os dados puros, permitindo a contagem dinâmica!
+        
         const todosVotos = await Voto.find({}).lean();
         const estatisticas = {};
 
@@ -398,7 +398,7 @@ app.get("/cadastro_eleitor", function (req, res) {
 
 app.post("/cadastro_eleitor", async (req, res) => {
     try {
-        // Removemos zona e secao da requisição, o usuário não envia mais isso!
+        
         const { nome, cpf, dataNascimento, estado, cidade, sexo, senha } = req.body;
 
         const eleitorExistente = await Eleitor.findOne({ cpf: cpf });
@@ -412,7 +412,7 @@ app.post("/cadastro_eleitor", async (req, res) => {
             `);
         }
 
-        // Cálculo exato da idade
+       
         const hoje = new Date();
         const nascimento = new Date(dataNascimento);
         let idadedecalculo = hoje.getFullYear() - nascimento.getFullYear();
@@ -430,17 +430,16 @@ app.post("/cadastro_eleitor", async (req, res) => {
             `);
         }
 
-        // --- MÁGICA DA REGIONALIZAÇÃO: GERADOR DE ZONA E SEÇÃO ---
-        // 1. Gera a Zona baseada na cidade/estado (mesma cidade = mesma zona)
+       
         const stringLocal = `${cidade}-${estado}`;
         let hashLocal = 0;
         for (let i = 0; i < stringLocal.length; i++) {
             hashLocal += stringLocal.charCodeAt(i);
         }
-        const zonaGerada = String((hashLocal % 300) + 1).padStart(3, '0'); // Ex: 045
+        const zonaGerada = String((hashLocal % 300) + 1).padStart(3, '0'); 
         
-        // 2. Gera a Seção de forma aleatória para distribuir nas "salas" (0001 a 0500)
-        const secaoGerada = String(Math.floor(Math.random() * 500) + 1).padStart(4, '0'); // Ex: 0128
+        
+        const secaoGerada = String(Math.floor(Math.random() * 500) + 1).padStart(4, '0'); 
 
         const hash = await bcrypt.hash(senha, saltRounds);
 
@@ -452,8 +451,8 @@ app.post("/cadastro_eleitor", async (req, res) => {
             estado,
             cidade,
             sexo,
-            zona: zonaGerada,   // Salvando o valor automático
-            secao: secaoGerada, // Salvando o valor automático
+            zona: zonaGerada,   
+            secao: secaoGerada, 
             senha: hash
         });
 
@@ -491,7 +490,7 @@ app.post("/cadastro_candidato", async (req, res) => {
             idadedecalculo--;
         }
 
-        // --- MÁGICA DA REGIONALIZAÇÃO: GERADOR DE ZONA E SEÇÃO ---
+        
         const stringLocal = `${cidade}-${estado}`;
         let hashLocal = 0;
         for (let i = 0; i < stringLocal.length; i++) {
@@ -531,10 +530,10 @@ app.get("/home_adm", (req, res) => res.render("home_adm.ejs"));
 
 app.get("/lista_candidatos", async (req, res) => {
     try {
-        // Busca qual é a eleição ativa no momento
+    
         const eleicaoAtiva = await Eleicao.findOne({ ativa: true });
 
-        // Se não houver eleição ativa, manda um objeto vazio para não quebrar a tela
+        
         if (!eleicaoAtiva) {
             return res.render("lista_candidatos.ejs", { 
                 candidatosPorCargo: {}, 
@@ -542,10 +541,10 @@ app.get("/lista_candidatos", async (req, res) => {
             });
         }
 
-        // Filtro base: apenas os homologados e ativos
+        
         const filtro = { status: "Homologado", ativo: true };
 
-        // Aplica o filtro de cargos dependendo do tipo da eleição
+        
         if (eleicaoAtiva.tipo === "Municipal") {
             filtro.cargo = { $in: ["Prefeito", "Vereador"] };
         } else {
@@ -562,7 +561,7 @@ app.get("/lista_candidatos", async (req, res) => {
             candidatosPorCargo[candidato.cargo].push(candidato);
         });
 
-        // Passamos o nome da eleição para a tela
+        
         res.render("lista_candidatos.ejs", { candidatosPorCargo, nomeEleicao: eleicaoAtiva.nome });
 
     } catch (error) {
@@ -601,10 +600,10 @@ app.post("/lancar_candidatura", async (req, res) => {
         const idUsuario = req.session.id_usuario;
         const { numero, cargo, partido, slogan, descricao } = req.body;
 
-        // 1. Busca os dados do candidato para verificar a idade
+        
         const candidato = await Candidato.findById(idUsuario);
 
-        // 2. Validação da Regra de Negócio (Idade Mínima)
+        
         let idadeMinima = 0;
         if (cargo === "Presidente" || cargo === "Senador") {
             idadeMinima = 35;
@@ -622,13 +621,13 @@ app.post("/lancar_candidatura", async (req, res) => {
             return res.send(`<script>alert("Idade insuficiente! A Constituição exige a idade mínima de ${idadeMinima} anos para o cargo de ${cargo}. Sua idade atual é ${candidato.idade} anos."); window.history.back();</script>`);
         }
 
-        // 3. Validação de Número Único
+        
         const numeroEmUso = await Candidato.findOne({ numero: Number(numero), cargo: cargo });
         if (numeroEmUso) {
             return res.send(`<script>alert("Esse número já está registrado para este cargo!"); window.history.back();</script>`);
         }
 
-        // 4. Salva a Candidatura
+     
         await Candidato.findByIdAndUpdate(idUsuario, {
             numero: Number(numero),
             cargo,
@@ -793,7 +792,7 @@ app.post("/candidatos/:id/editar", async (req, res) => {
             return res.redirect('/');
         }
 
-        // Recebendo cidade e estado no lugar de municipio
+        
         const { nome, partido, cidade, estado, numero, status } = req.body;
         
         await Candidato.findByIdAndUpdate(req.params.id, {
@@ -817,10 +816,10 @@ app.post("/candidatos/:id/inativar", async (req, res) => {
             return res.redirect('/');
         }
 
-        // Busca o candidato para saber se ele está ativo ou inativo
+       
         const candidato = await Candidato.findById(req.params.id);
         
-        // Inverte o status atual (Se true vira false, se false vira true)
+        
         await Candidato.findByIdAndUpdate(req.params.id, { ativo: !candidato.ativo });
         
         res.redirect("/consulta_candidatos");
@@ -864,7 +863,7 @@ app.post("/eleitores/:id/editar", async (req, res) => {
 
         const { nome, dataNascimento, cidade, estado } = req.body;
         
-        // Recalcular a idade baseada na nova data inserida
+        
         const hoje = new Date();
         const nascimento = new Date(dataNascimento);
         let idadeCalculada = hoje.getFullYear() - nascimento.getFullYear();
@@ -906,7 +905,6 @@ app.listen("3000", function () {
   console.log("Servidor rodando na porta 3000!");
 });
 
-// ===== ELEICOES =====
 app.get("/eleicoes", async(req,res)=>{
  const eleicoes = await Eleicao.find();
  res.render("eleicoes.ejs",{eleicoes});
