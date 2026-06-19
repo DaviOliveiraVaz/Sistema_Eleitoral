@@ -192,7 +192,7 @@ app.get("/urna", async function (req, res) {
         }
 
         const docs = await Candidato.find(filtro);
-        res.render("urna.ejs", { Candidatos: docs, tipoEleicao });
+        res.render("urna.ejs", { Candidatos: docs, tipoEleicao, usuario: usuarioVotante });
 
     } catch (error) {
         console.error("Erro: ", error);
@@ -219,7 +219,6 @@ app.post("/votar", async (req, res) => {
 
         const tipoEleicao = eleicaoAtiva.tipo;
 
-        // TRAVA DE SEGURANÇA FINAL
         if (tipoEleicao === "Geral" && usuarioVotante.votouGeral) {
             return res.status(400).json({ message: "Você já votou nas Eleições Gerais." });
         } else if (tipoEleicao === "Municipal" && usuarioVotante.votouMunicipal) {
@@ -242,10 +241,11 @@ app.post("/votar", async (req, res) => {
         const isMunicipal = tipoEleicao === "Municipal";
         const mapaCargos = isMunicipal ? cargosMunicipal : cargosGeral;
 
+        // VALIDAÇÃO BLINDADA: Garante que Branco e Nulo sejam gravados como Texto
         async function validarCandidato(numero, cargo) {
-            if (!numero) return null;
-            const candidato = await Candidato.findOne({ numero: Number(numero), cargo, status: "Homologado" });
-            return candidato ? candidato._id : null;
+            if (numero === null || numero === "") return "Branco"; 
+            const candidato = await Candidato.findOne({ numero: Number(numero), cargo, status: "Homologado", ativo: true });
+            return candidato ? candidato._id.toString() : "Nulo"; 
         }
 
         const voto = {};
@@ -256,12 +256,11 @@ app.post("/votar", async (req, res) => {
         await Voto.create({ votos: voto });
 
         for (let cargo in voto) {
-            if (voto[cargo]) {
+            if (voto[cargo] && voto[cargo] !== "Branco" && voto[cargo] !== "Nulo") {
                 await Candidato.findByIdAndUpdate(voto[cargo], { $inc: { votos: 1 } });
             }
         }
 
-        // SALVA A TRAVA CORRETA
         if (tipoEleicao === "Geral") {
             usuarioVotante.votouGeral = true;
         } else {
@@ -321,41 +320,76 @@ app.post("/admin/homologar", async (req, res) => {
 });
 
 app.get("/resultados", async (req, res) => {
-  try {
-    // Mesma lógica: verifica a eleição ativa
-    const eleicaoAtiva = await Eleicao.findOne({ ativa: true });
+    try {
+        const eleicaoAtiva = await Eleicao.findOne({ ativa: true });
 
-    if (!eleicaoAtiva) {
-        return res.render("resultados.ejs", { 
-            resultadosPorCargo: {}, 
-            nomeEleicao: "Nenhuma eleição ativa no momento" 
+        if (!eleicaoAtiva) {
+            return res.render("resultados.ejs", { 
+                resultadosPorCargo: {}, 
+                estatisticas: {}, 
+                nomeEleicao: "Nenhuma eleição ativa no momento" 
+            });
+        }
+
+        const filtro = { status: "Homologado", ativo: true };
+        const chavesCargos = []; 
+
+        if (eleicaoAtiva.tipo === "Municipal") {
+            filtro.cargo = { $in: ["Prefeito", "Vereador"] };
+            chavesCargos.push({ chave: "prefeito", nome: "Prefeito" }, { chave: "vereador", nome: "Vereador" });
+        } else {
+            filtro.cargo = { $in: ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual"] };
+            chavesCargos.push(
+                { chave: "presidente", nome: "Presidente" },
+                { chave: "governador", nome: "Governador" },
+                { chave: "senador", nome: "Senador" },
+                { chave: "deputadoFederal", nome: "Deputado Federal" },
+                { chave: "deputadoEstadual", nome: "Deputado Estadual" }
+            );
+        }
+
+        const candidatos = await Candidato.find(filtro).sort({ votos: -1 });
+
+        const resultadosPorCargo = {};
+        candidatos.forEach(candidato => {
+            if (!resultadosPorCargo[candidato.cargo]) {
+                resultadosPorCargo[candidato.cargo] = [];
+            }
+            resultadosPorCargo[candidato.cargo].push(candidato);
         });
+
+        // O SEGREDO: O ".lean()" traz os dados puros, permitindo a contagem dinâmica!
+        const todosVotos = await Voto.find({}).lean();
+        const estatisticas = {};
+
+        chavesCargos.forEach(c => {
+            estatisticas[c.nome] = { validos: 0, brancos: 0, nulos: 0, total: 0 };
+        });
+
+        todosVotos.forEach(v => {
+            chavesCargos.forEach(c => {
+                if (v.votos && v.votos[c.chave]) {
+                    const valorVoto = v.votos[c.chave];
+                    if (valorVoto === "Branco") {
+                        estatisticas[c.nome].brancos += 1;
+                        estatisticas[c.nome].total += 1;
+                    } else if (valorVoto === "Nulo") {
+                        estatisticas[c.nome].nulos += 1;
+                        estatisticas[c.nome].total += 1;
+                    } else {
+                        estatisticas[c.nome].validos += 1;
+                        estatisticas[c.nome].total += 1;
+                    }
+                }
+            });
+        });
+
+        res.render("resultados.ejs", { resultadosPorCargo, estatisticas, nomeEleicao: eleicaoAtiva.nome });
+
+    } catch (error) {
+        console.error("Erro ao carregar os resultados:", error);
+        res.status(500).send("Erro interno ao carregar os resultados da eleição.");
     }
-
-    const filtro = { status: "Homologado", ativo: true };
-
-    if (eleicaoAtiva.tipo === "Municipal") {
-        filtro.cargo = { $in: ["Prefeito", "Vereador"] };
-    } else {
-        filtro.cargo = { $in: ["Presidente", "Governador", "Senador", "Deputado Federal", "Deputado Estadual"] };
-    }
-
-    const candidatos = await Candidato.find(filtro).sort({ votos: -1 });
-
-    const resultadosPorCargo = {};
-    candidatos.forEach(candidato => {
-      if (!resultadosPorCargo[candidato.cargo]) {
-        resultadosPorCargo[candidato.cargo] = [];
-      }
-      resultadosPorCargo[candidato.cargo].push(candidato);
-    });
-
-    res.render("resultados.ejs", { resultadosPorCargo, nomeEleicao: eleicaoAtiva.nome });
-
-  } catch (error) {
-    console.error("Erro ao carregar os resultados:", error);
-    res.status(500).send("Erro interno ao carregar os resultados da eleição.");
-  }
 });
 
 app.get("/cadastro_eleitor", function (req, res) {

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Urna Eletrônica</title>
     <link rel="stylesheet" href="/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         .urna-wrapper {
             display: flex;
@@ -63,11 +64,8 @@
     <div class="urna-wrapper">
         <div class="urna-container">
             
-            <!-- TELA DA URNA -->
             <div class="urna-tela">
-                <!-- Flexbox inserido para separar dados (esquerda) e foto (direita) -->
                 <div id="tela-voto" style="display: flex; justify-content: space-between; height: 100%;">
-                    
                     <div style="flex: 1;">
                         <div class="tela-header">
                             <span style="font-size: 1rem; font-weight: normal;">Seu voto para</span><br>
@@ -75,21 +73,17 @@
                         </div>
 
                         <div class="tela-numeros" id="tela-numeros">
-                            <!-- JS injeta os digitos aqui -->
-                        </div>
+                            </div>
 
                         <div id="info-candidato" class="info-candidato"></div>
                     </div>
 
-                    <!-- DIV DA FOTO (Fica oculta até achar um candidato) -->
                     <div id="foto-candidato-container" style="display: none; flex-direction: column; align-items: center; margin-left: 15px;">
                         <div style="width: 110px; height: 150px; border: 2px solid #333; background-color: #fff; padding: 2px; box-shadow: 2px 2px 0px rgba(0,0,0,0.2);">
-                            <!-- Avatar cinza padrão -->
                             <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" alt="Foto do Candidato" style="width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%);">
                         </div>
                         <span style="font-size: 0.7rem; margin-top: 5px; font-weight: bold; text-align: center;">FOTO PADRÃO</span>
                     </div>
-
                 </div>
                 
                 <div id="tela-fim" class="tela-fim">FIM</div>
@@ -101,7 +95,6 @@
                 </div>
             </div>
 
-            <!-- TECLADO DA URNA -->
             <div class="urna-teclado">
                 <div class="teclado-numeros">
                     <button class="tecla" onclick="inserirNumero(1)">1</button>
@@ -124,12 +117,46 @@
                     <button class="tecla-acao tecla-confirma" onclick="confirmarVoto()">Confirma</button>
                 </div>
             </div>
+        </div>
+    </div>
 
+    <div id="modalSucesso" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center;">
+        <div style="background:#fff; padding:40px; border-radius:8px; text-align:center; max-width:400px; width: 90%;">
+            <div style="font-size:4rem; margin-bottom:10px;">✅</div>
+            <h2 style="color:#2ecc71; margin-bottom:10px;">VOTO CONFIRMADO</h2>
+            <p style="color:#555; margin-bottom:25px;">Seu voto foi registrado com sucesso na urna eletrônica. A democracia agradece a sua participação!</p>
+            
+            <button onclick="gerarComprovanteUrna()" class="btn btn-primary" style="background-color:#3498db; width:100%; margin-bottom:10px; padding: 12px; font-size: 1.1rem;">
+                📄 Baixar Comprovante (PDF)
+            </button>
+            <button onclick="window.location.href='/resultados'" class="btn btn-voltar" style="width:100%; padding: 12px; font-size: 1.1rem;">
+                📊 Ir para Apuração
+            </button>
+        </div>
+    </div>
+
+    <div id="area-comprovante" style="display:none;">
+        <div id="comprovante-pdf" style="padding: 30px; font-family: 'Courier New', Courier, monospace; color: #000; width: 400px; background: #fff; border: 2px solid #000;">
+            <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="margin: 0;">JUSTIÇA ELEITORAL</h2>
+                <h4 style="margin: 5px 0 0 0;">Comprovante de Votação</h4>
+            </div>
+            <p style="margin-bottom: 8px;"><strong>Eleitor:</strong> <%= usuario.nome %></p>
+            <p style="margin-bottom: 8px;"><strong>CPF:</strong> <%= usuario.cpf.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**') %></p>
+            <p style="margin-bottom: 8px;"><strong>Eleição:</strong> <%= tipoEleicao %></p>
+            <p style="margin-bottom: 8px;"><strong>Zona/Seção:</strong> <%= usuario.zona %> / <%= usuario.secao %></p>
+            <p style="margin-bottom: 8px;"><strong>Data/Hora:</strong> <span id="comp-data"></span></p>
+            <hr style="border-top: 1px dashed #000; margin: 20px 0;">
+            <p style="font-size: 0.85rem; text-align: center; word-break: break-all;">
+                CÓDIGO DE AUTENTICAÇÃO<br>
+                <strong id="comp-hash"></strong>
+            </p>
         </div>
     </div>
 
     <script>
         const tipoEleicao = "<%- tipoEleicao %>";
+        const idUsuario = "<%- usuario._id %>";
 
         const cargos = tipoEleicao === "Municipal"
             ? [
@@ -139,15 +166,18 @@
             : [
                 { nome: "Deputado Estadual", chave: "deputadoEstadual", digitos: 5 },
                 { nome: "Deputado Federal",  chave: "deputadoFederal",  digitos: 4 },
-                { nome: "Senador",           chave: "senador",           digitos: 3 },
-                { nome: "Governador",        chave: "governador",        digitos: 2 },
-                { nome: "Presidente",        chave: "presidente",        digitos: 2 }
+                { nome: "Senador",           chave: "senador",          digitos: 3 },
+                { nome: "Governador",        chave: "governador",       digitos: 2 },
+                { nome: "Presidente",        chave: "presidente",       digitos: 2 }
               ];
 
         let etapaAtual = 0;
         let votoAtual = "";
         let isBranco = false;
         let votos = {};
+        
+        // NOVA TRAVA DE SEGURANÇA
+        let votacaoFinalizada = false; 
         
         const candidatos = <%- JSON.stringify(Candidatos) %>;
 
@@ -164,7 +194,7 @@
             containerNumeros.style.display = "flex";
             containerNumeros.innerHTML = "";
             info.innerHTML = "";
-            fotoContainer.style.display = "none"; // Sempre esconde a foto ao resetar a tela
+            fotoContainer.style.display = "none"; 
 
             if (isBranco) {
                 containerNumeros.style.display = "none";
@@ -200,7 +230,6 @@
                             Local: ${candidato.cidade} - ${candidato.estado}
                         </span>
                     `;
-                    // Exibe a foto padrão quando encontra um candidato válido
                     fotoContainer.style.display = "flex";
                 } else {
                     info.innerHTML = `<div style="font-size: 1.8rem; margin-top: 15px; animation: piscaLento 1.5s infinite;">NÚMERO ERRADO<br>VOTO NULO</div>`;
@@ -209,7 +238,8 @@
         }
 
         function inserirNumero(num) {
-            if (isBranco) return; 
+            if (votacaoFinalizada || isBranco) return; // Bloqueia se já acabou
+            
             if (votoAtual.length < cargos[etapaAtual].digitos) {
                 votoAtual += num;
                 atualizarTela();
@@ -217,12 +247,16 @@
         }
 
         function corrigirVoto() {
+            if (votacaoFinalizada) return; // Bloqueia se já acabou
+            
             votoAtual = "";
             isBranco = false;
             atualizarTela();
         }
 
         function votarBranco() {
+            if (votacaoFinalizada) return; // Bloqueia se já acabou
+            
             if (votoAtual === "") {
                 isBranco = true;
                 atualizarTela();
@@ -232,6 +266,8 @@
         }
 
         function confirmarVoto() {
+            if (votacaoFinalizada) return; // Bloqueia cliques duplos no final
+            
             const etapa = cargos[etapaAtual];
             let votoConfirmado = null;
 
@@ -258,15 +294,18 @@
         }
 
         function finalizarVotacao() {
+            votacaoFinalizada = true; // Trava todo o teclado numérico
+            
             document.getElementById("tela-voto").style.display = "none";
             document.getElementById("tela-rodape").style.display = "none";
             
             const telaFim = document.getElementById("tela-fim");
             telaFim.style.display = "block";
 
+            // Reduzimos o tempo de espera para ficar bem dinâmico
             setTimeout(() => {
                 enviarVotos();
-            }, 2500); 
+            }, 800); 
         }
 
         async function enviarVotos() {
@@ -279,11 +318,39 @@
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
                 
-                window.location.href = "/resultados";
+                document.getElementById("tela-fim").style.display = "none";
+                document.getElementById("modalSucesso").style.display = "flex";
+
             } catch (err) {
                 alert("Erro ao computar voto: " + err.message);
                 window.location.href = "/";
             }
+        }
+
+        // FUNÇÃO QUE GERA O PDF
+        function gerarComprovanteUrna() {
+            const dataAtual = new Date().toLocaleString('pt-BR');
+            document.getElementById('comp-data').innerText = dataAtual;
+            
+            const hash = idUsuario.substring(0,8).toUpperCase() + "-" + Date.now().toString().substring(6);
+            document.getElementById('comp-hash').innerText = hash;
+
+            const elemento = document.getElementById('comprovante-pdf');
+            const area = document.getElementById('area-comprovante');
+            
+            area.style.display = 'block'; 
+            
+            const opcoes = {
+                margin: 10,
+                filename: `Comprovante_Votacao_${tipoEleicao}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opcoes).from(elemento).save().then(() => {
+                area.style.display = 'none'; 
+            });
         }
 
         atualizarTela();

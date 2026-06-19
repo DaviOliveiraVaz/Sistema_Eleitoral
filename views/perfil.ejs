@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Meu Perfil</title>
     <link rel="stylesheet" href="/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <%- include('navbar') %>
@@ -80,17 +81,41 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Situação do Voto</label>
-                    <div style="margin-top: 5px;">
-                        <% if (usuario.votouGeral || usuario.votouMunicipal) { %>
-                            <span class="status-aprovado" style="background-color: #d4edda; padding: 6px 12px; border-radius: 4px;">
-                                ● Voto Registrado
-                            </span>
-                        <% } else { %>
-                            <span class="status-rejeitado" style="background-color: #f8d7da; padding: 6px 12px; border-radius: 4px;">
-                                ○ Ainda não votou
-                            </span>
-                        <% } %>
+                    <label>Situação do Voto e Comprovantes</label>
+                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff;">
+                            <div>
+                                <strong>Eleições Gerais:</strong><br>
+                                <% if (usuario.votouGeral) { %>
+                                    <span style="color: #2ecc71; font-weight: bold;">● Voto Registrado</span>
+                                <% } else { %>
+                                    <span style="color: #e74c3c; font-weight: bold;">○ Pendente</span>
+                                <% } %>
+                            </div>
+                            <% if (usuario.votouGeral) { %>
+                                <button type="button" onclick="gerarComprovantePerfil('Geral')" class="btn btn-primary" style="background-color: #3498db; padding: 8px 15px; font-size: 0.9rem;">
+                                    📄 Baixar PDF
+                                </button>
+                            <% } %>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff;">
+                            <div>
+                                <strong>Eleições Municipais:</strong><br>
+                                <% if (usuario.votouMunicipal) { %>
+                                    <span style="color: #2ecc71; font-weight: bold;">● Voto Registrado</span>
+                                <% } else { %>
+                                    <span style="color: #e74c3c; font-weight: bold;">○ Pendente</span>
+                                <% } %>
+                            </div>
+                            <% if (usuario.votouMunicipal) { %>
+                                <button type="button" onclick="gerarComprovantePerfil('Municipal')" class="btn btn-primary" style="background-color: #3498db; padding: 8px 15px; font-size: 0.9rem;">
+                                    📄 Baixar PDF
+                                </button>
+                            <% } %>
+                        </div>
+
                     </div>
                 </div>
 
@@ -108,7 +133,56 @@
         </div>
     </main>
 
+    <div id="area-comprovante" style="display:none;">
+        <div id="comprovante-pdf" style="padding: 30px; font-family: 'Courier New', Courier, monospace; color: #000; width: 400px; background: #fff; border: 2px solid #000;">
+            <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="margin: 0;">JUSTIÇA ELEITORAL</h2>
+                <h4 style="margin: 5px 0 0 0;">Comprovante de Votação</h4>
+            </div>
+            <p style="margin-bottom: 8px;"><strong>Eleitor:</strong> <%= usuario.nome %></p>
+            <p style="margin-bottom: 8px;"><strong>CPF:</strong> <%= usuario.cpf.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/, '***.$2.$3-**') %></p>
+            <p style="margin-bottom: 8px;"><strong>Eleição:</strong> <span id="comp-eleicao"></span></p>
+            <p style="margin-bottom: 8px;"><strong>Zona/Seção:</strong> <%= usuario.zona %> / <%= usuario.secao %></p>
+            <p style="margin-bottom: 8px;"><strong>Emitido em:</strong> <span id="comp-data"></span></p>
+            <hr style="border-top: 1px dashed #000; margin: 20px 0;">
+            <p style="font-size: 0.85rem; text-align: center; word-break: break-all;">
+                CÓDIGO DE AUTENTICAÇÃO<br>
+                <strong id="comp-hash"></strong>
+            </p>
+        </div>
+    </div>
+
     <script>
+        // Função para Gerar PDF pelo Perfil
+        function gerarComprovantePerfil(tipo) {
+            const dataAtual = new Date().toLocaleString('pt-BR');
+            document.getElementById('comp-data').innerText = dataAtual;
+            document.getElementById('comp-eleicao').innerText = tipo;
+            
+            // Código de validação persistente (Baseado no ID do Usuário + Tipo)
+            const idUsuario = "<%= usuario._id %>".substring(0,8).toUpperCase();
+            const hash = idUsuario + "-" + btoa(tipo).toUpperCase();
+            document.getElementById('comp-hash').innerText = hash;
+
+            const elemento = document.getElementById('comprovante-pdf');
+            const area = document.getElementById('area-comprovante');
+            
+            area.style.display = 'block'; 
+            
+            const opcoes = {
+                margin: 10,
+                filename: `Comprovante_Eleicoes_${tipo}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opcoes).from(elemento).save().then(() => {
+                area.style.display = 'none'; 
+            });
+        }
+
+        // Lógica de Cidades do IBGE mantida...
         const estadoSelect = document.getElementById("estado");
         const cidadeSelect = document.getElementById("cidade");
         
