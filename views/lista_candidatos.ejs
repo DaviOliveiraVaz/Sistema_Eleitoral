@@ -17,7 +17,7 @@
     <div class="container">
         <div class="view active">
             <header style="text-align: center; margin-bottom: 30px;">
-                <!-- Título da página dinâmico puxando do backend -->
+                
                 <h2 style="color: #2c3e50;">Lista de Candidatos - <span style="color: #3498db;"><%= nomeEleicao %></span></h2>
                 <p>Selecione um cargo para filtrar a lista e clique em um candidato para ver as propostas</p>
             </header>
@@ -41,7 +41,7 @@
                             <div style="display: grid; gap: 15px; margin-top: 20px;">
                                 <% candidatosDoCargo.forEach((candidato) => { %>
                                     
-                                    <!-- DIV Clicável -->
+                                    
                                     <div class="instruction-item card-clicavel" 
                                          data-candidato="<%= encodeURIComponent(JSON.stringify(candidato)) %>"
                                          onclick="abrirModalDetalhesCandidato(this)"
@@ -64,7 +64,7 @@
                     <% } %>
                 <% } %>
                 
-                <!-- Mensagem caso não tenha candidatos na eleição ativa -->
+                
                 <% if (Object.keys(candidatosPorCargo).length === 0) { %>
                     <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px; color: #7f8c8d;">
                         <h3 style="margin-bottom: 10px;">Nenhum candidato encontrado</h3>
@@ -75,13 +75,13 @@
         </div>
     </div>
 
-    <!-- MODAL DETALHES GERAIS PÚBLICO -->
+
     <div id="modalDetalhes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
         <div class="login-wrapper" style="max-width:550px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
             <button onclick="fecharModalDetalhes()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #555;">&times;</button>
             <header class="login-header" style="margin-bottom: 10px;"><h2 style="margin-bottom: 0;">📋 Perfil do Candidato</h2></header>
             <div id="conteudoDetalhes" style="padding: 10px 20px 20px; text-align: left; line-height: 1.6; color: #333;">
-                <!-- Preenchido via JS -->
+               
             </div>
         </div>
     </div>
@@ -99,7 +99,7 @@
             const candidato = JSON.parse(decodeURIComponent(elemento.getAttribute('data-candidato')));
             const dataNasc = candidato.dataNascimento ? candidato.dataNascimento.split('T')[0].split('-').reverse().join('/') : 'Não informada';
             
-            // Ocultamos dados sensíveis como CPF para os eleitores
+            
             const html = `
                 <h4 style="color: #3498db; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px;">👤 Informações Básicas</h4>
                 <p style="margin-bottom: 5px;"><strong>Nome de Urna:</strong> ${candidato.nome}</p>
@@ -125,7 +125,7 @@
             document.getElementById('modalDetalhes').style.display = 'none';
         }
 
-        // Fecha o modal ao clicar fora dele
+       
         window.addEventListener('click', function(e) {
             if (e.target === document.getElementById('modalDetalhes')) fecharModalDetalhes();
         });

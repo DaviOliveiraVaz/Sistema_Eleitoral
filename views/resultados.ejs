@@ -29,7 +29,7 @@
                     <% if (candidatosDoCargo.length > 0) { %>
                         <h3 class="section-title" style="color: #3498db; border-color: #3498db;"><%= cargo %></h3>
 
-                        <!-- PAINEL DE ESTATÍSTICAS -->
+                        
                         <% if (estatisticas && estatisticas[cargo]) { %>
                             <div style="display: flex; gap: 15px; margin-bottom: 20px; justify-content: space-between; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
                                 <div style="text-align: center; flex: 1;">
@@ -96,7 +96,7 @@
                     },
                     options: { 
                         responsive: false,
-                        animation: false // <-- O SEGREDO QUE RESOLVE A CORRUPÇÃO DO PDF
+                        animation: false 
                     }
                 });
             }

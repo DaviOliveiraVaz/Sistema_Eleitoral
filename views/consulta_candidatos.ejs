@@ -155,7 +155,7 @@
             });
         }
 
-        // Funções do Modal de Detalhes Completo
+       
         function abrirModalDetalhesCandidato(elemento) {
             const candidato = JSON.parse(decodeURIComponent(elemento.getAttribute('data-candidato')));
             const dataNasc = candidato.dataNascimento ? candidato.dataNascimento.split('T')[0].split('-').reverse().join('/') : 'Não informada';
@@ -189,7 +189,6 @@
             document.getElementById('modalDetalhes').style.display = 'none';
         }
 
-        // Funções de Inativar
         function abrirModalInativar(id, nome) {
             document.getElementById('nomeInativar').textContent = nome;
             document.getElementById('formInativar').action = '/candidatos/' + id + '/inativar';
@@ -200,7 +199,6 @@
             document.getElementById('modalInativar').style.display = 'none';
         }
 
-        // Lógica de Endereço e Edição
         const editEstadoSelect = document.getElementById('editEstado');
         const editCidadeSelect = document.getElementById('editCidade');
 

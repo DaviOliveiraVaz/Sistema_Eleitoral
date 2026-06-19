@@ -176,7 +176,7 @@
         let isBranco = false;
         let votos = {};
         
-        // NOVA TRAVA DE SEGURANÇA
+        
         let votacaoFinalizada = false; 
         
         const candidatos = <%- JSON.stringify(Candidatos) %>;
@@ -238,7 +238,7 @@
         }
 
         function inserirNumero(num) {
-            if (votacaoFinalizada || isBranco) return; // Bloqueia se já acabou
+            if (votacaoFinalizada || isBranco) return; 
             
             if (votoAtual.length < cargos[etapaAtual].digitos) {
                 votoAtual += num;
@@ -247,7 +247,7 @@
         }
 
         function corrigirVoto() {
-            if (votacaoFinalizada) return; // Bloqueia se já acabou
+            if (votacaoFinalizada) return; 
             
             votoAtual = "";
             isBranco = false;
@@ -255,7 +255,7 @@
         }
 
         function votarBranco() {
-            if (votacaoFinalizada) return; // Bloqueia se já acabou
+            if (votacaoFinalizada) return;
             
             if (votoAtual === "") {
                 isBranco = true;
@@ -266,7 +266,7 @@
         }
 
         function confirmarVoto() {
-            if (votacaoFinalizada) return; // Bloqueia cliques duplos no final
+            if (votacaoFinalizada) return; 
             
             const etapa = cargos[etapaAtual];
             let votoConfirmado = null;
@@ -294,7 +294,7 @@
         }
 
         function finalizarVotacao() {
-            votacaoFinalizada = true; // Trava todo o teclado numérico
+            votacaoFinalizada = true; 
             
             document.getElementById("tela-voto").style.display = "none";
             document.getElementById("tela-rodape").style.display = "none";
@@ -302,7 +302,7 @@
             const telaFim = document.getElementById("tela-fim");
             telaFim.style.display = "block";
 
-            // Reduzimos o tempo de espera para ficar bem dinâmico
+        
             setTimeout(() => {
                 enviarVotos();
             }, 800); 
@@ -327,7 +327,7 @@
             }
         }
 
-        // FUNÇÃO QUE GERA O PDF
+        
         function gerarComprovanteUrna() {
             const dataAtual = new Date().toLocaleString('pt-BR');
             document.getElementById('comp-data').innerText = dataAtual;
